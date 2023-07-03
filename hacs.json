@@ -1,0 +1,14 @@
+{
+    "name": "Emergency Alert System Generator component",
+    "country": [
+      "US"
+    ],
+    "domains": [
+      "sensor"
+    ],
+    "render_readme": true,
+    "zip_release": false,
+    "hide_default_branch": true,
+    "iot_class": "Local Polling",
+    "homeassistant": "2021.3"
+  }

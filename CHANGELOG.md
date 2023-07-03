@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.2](https://github.com/Makr91/ha_easgen/compare/v0.1.1...v0.1.2) (2023-07-03)
+
+
+### Bug Fixes
+
+* add icons ([45f8c2d](https://github.com/Makr91/ha_easgen/commit/45f8c2dab7533ca3719e998ee266e4de389fae7a))
+* change to zip style release ([6f25c8f](https://github.com/Makr91/ha_easgen/commit/6f25c8f48a3c459a922efdf031bb3687cc381a5b))
+* hacs validation ([7ce7e25](https://github.com/Makr91/ha_easgen/commit/7ce7e2533971aa87a823937d741d4cabf65f487d))
+* hacs validation ([b2d8875](https://github.com/Makr91/ha_easgen/commit/b2d887583b2f46080bfa64f353a72328da8cbd13))
+* hacs validation ([ad4d08a](https://github.com/Makr91/ha_easgen/commit/ad4d08ae6d3bb7c1b7f89caaa1e94196fc77dda6))
+* hacs validation ([2304e39](https://github.com/Makr91/ha_easgen/commit/2304e39a165207e0bb0eeaee3a92830aea4c8c70))
+* Ignore Brands and Fix Extra keys in hacs manifest ([92157cd](https://github.com/Makr91/ha_easgen/commit/92157cdfc15e5556b4093802a7591dd1a68d3e7b))
+* new version and action ([da4fce3](https://github.com/Makr91/ha_easgen/commit/da4fce328ac9674be6f1d49a198a4e762b5b8c21))
+* update dependency utils ([aaceaf1](https://github.com/Makr91/ha_easgen/commit/aaceaf12594538c3dacd8609145b9b2f4fe61c32))
+* workflow ([bba11a4](https://github.com/Makr91/ha_easgen/commit/bba11a4894bbe577126b9353aa150bdfc4a7d729))
+* workflow revisions ([5912618](https://github.com/Makr91/ha_easgen/commit/5912618fa3c25ebf0606ea156ecde544fee8cc57))
+* workflow revisions ([abfb357](https://github.com/Makr91/ha_easgen/commit/abfb35790552b53ebd1f6fefeba55d8fe575f895))
+
 ## [0.1.1](https://github.com/Makr91/ha_easgen/compare/v0.1.0...v0.1.1) (2023-07-03)
 
 

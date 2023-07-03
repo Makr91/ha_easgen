@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  contents: write
+  pull-requests: write
+  
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout the repository"
+        uses: "actions/checkout@v3.5.2"
+
+      - name: Patch manifest and zip
+        run: |
+          sed -i 's/v0.0.0/${{ github.event.release.tag_name }}/' custom_components/easgen/manifest.json
+ 
+      - name: "ZIP the integration directory"
+        shell: "bash"
+        run: |
+          cd "${{ github.workspace }}/custom_components/ha_easgen"
+          zip ha_easgen.zip -r ./
+
+      - name: "Upload the ZIP file to the release"
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          files: ${{ github.workspace }}/custom_components/ha_easgen/ha_easgen.zip

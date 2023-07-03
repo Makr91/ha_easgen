@@ -11,7 +11,7 @@ permissions:
   
 jobs:
   publish:
-    if: github.event.pull_request.merged == true and if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: github.event.pull_request.merged == true and github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the repository"

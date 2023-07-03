@@ -1,4 +1,4 @@
-"""The Emergency Alert System Generator"""
+"""Emergency Alert System Generator"""
 import logging
 import re
 import socket

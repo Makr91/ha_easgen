@@ -1,20 +1,20 @@
 {
     "domain": "easgen",
     "name": "Emergency Alert System Generator",
-    "requirements": ["pydub", "easgen"],
-    "codeowners": [
-      "@Makr91"
-    ],
     "after_dependencies": [
       "mqtt",
       "notify"
      ],
-    "dependencies": [
-      "http"
+    "codeowners": [
+      "@Makr91"
     ],
     "config_flow": true,
+    dependencies": [
+      "http"
+    ],
     "documentation": "https://github.com/makr91/ha_easgen",
     "iot_class": "local_push",
     "issue_tracker": "https://github.com/makr91/ha_easgen/issues",
+    "requirements": ["pydub", "easgen"],
     "version": "v0.0.0"
 }

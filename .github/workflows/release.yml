@@ -1,0 +1,25 @@
+name: Build, Release and Publish
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Release-Please
+        id: release
+        uses: GoogleCloudPlatform/release-please-action@v3
+        with:
+          command: manifest
+          default-branch: main
+          package-name: ha_easgen
+          bump-minor-pre-major: true
+          bump-patch-for-minor-pre-major: true

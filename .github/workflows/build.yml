@@ -28,6 +28,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: ./easgen.zip application/zip
+
       - 
         name: Release-Please
         id: release

@@ -1,0 +1,23 @@
+name: Build, Release and Publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-please:
+    steps:
+      - 
+        name: Release-Please
+        id: release
+        uses: GoogleCloudPlatform/release-please-action@v3
+        if: steps.vagrant-destroy.outputs.exit_code == 0
+        with:
+          command: manifest
+          default-branch: main
+          target-branch: main
+          package-name: ha_easgen
+          bump-minor-pre-major: true
+          bump-patch-for-minor-pre-major: true
+          version-file: "custom_components/easgen/manifest.json"

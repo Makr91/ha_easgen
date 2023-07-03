@@ -27,7 +27,7 @@ jobs:
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true
   
-  release-please:
+  publish:
     needs: release-please
     if: ${{ needs.release-please.outputs.exists }}
     runs-on: ubuntu-latest

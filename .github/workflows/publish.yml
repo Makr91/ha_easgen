@@ -5,7 +5,7 @@ on:
     types:
       - closed
     branches:
-      - "main"
+      - "release-please--branches--main"
 
 permissions:
   contents: write

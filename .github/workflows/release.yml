@@ -23,7 +23,10 @@ jobs:
           package-name: ha_easgen
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true
-          
+  if_merged:
+    needs: release-please
+    runs-on: ubuntu-latest
+    steps:
       - name: GitHub Tag Name example
         run: |
           echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"

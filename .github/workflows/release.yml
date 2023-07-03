@@ -26,6 +26,7 @@ jobs:
   if_merged:
     needs: release-please
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
 
       - name: "Checkout the repository"

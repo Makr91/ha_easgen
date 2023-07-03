@@ -13,7 +13,6 @@ jobs:
         name: Release-Please
         id: release
         uses: GoogleCloudPlatform/release-please-action@v3
-        if: steps.vagrant-destroy.outputs.exit_code == 0
         with:
           command: manifest
           default-branch: main

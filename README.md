@@ -1,3 +1,20 @@
+# Integration Emergency Alert System
+
+[![GitHub Release][releases-shield]][releases]
+[![GitHub Activity][commits-shield]][commits]
+[![License][license-shield]](LICENSE)
+
+[![hacs][hacsbadge]][hacs]
+![Project Maintenance][maintenance-shield]
+[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
+
+[![Discord][discord-shield]][discord]
+[![Community Forum][forum-shield]][forum]
+
+_Integration to integrate with [integration_blueprint][integration_blueprint]._
+
+**This integration will set up the following platforms.**
+
 # Home Assitant integrations
 Additional integrations for [Home Assistant](https://www.home-assistant.io/)
 

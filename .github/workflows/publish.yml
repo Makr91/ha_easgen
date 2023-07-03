@@ -1,0 +1,40 @@
+name: Publish
+
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  
+jobs:
+  publish:
+    if: github.event.pull_request.merged == true and if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout the repository"
+        uses: "actions/checkout@v3.5.2"
+        with:
+          fetch-depth: 0
+
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+
+      - name: Patch manifest and zip
+        run: |
+          yq -i -o json '.version="${{ steps.previoustag.outputs.tag }}"' \
+            "${{ github.workspace }}/custom_components/ha_easgen/manifest.json"
+
+      - name: "ZIP the integration directory"
+        shell: "bash"
+        run: |
+          cd "${{ github.workspace }}/custom_components/ha_easgen"
+          zip ha_easgen.zip -r ./
+
+      - name: "Upload the ZIP file to the release"
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          files: ${{ github.workspace }}/custom_components/ha_easgen/ha_easgen.zip

@@ -16,7 +16,7 @@ jobs:
         if: steps.vagrant-destroy.outputs.exit_code == 0
         with:
           command: manifest
-          target-branch: main
+          default-branch: main
           package-name: ha_easgen
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true

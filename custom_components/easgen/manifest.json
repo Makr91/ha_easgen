@@ -7,11 +7,11 @@
      ],
     "codeowners": [
       "@Makr91"
-    ],
-    "config_flow": true,
-    dependencies": [
+    ], 
+    "dependencies": [
       "http"
     ],
+    "config_flow": true,
     "documentation": "https://github.com/makr91/ha_easgen",
     "iot_class": "local_push",
     "issue_tracker": "https://github.com/makr91/ha_easgen/issues",

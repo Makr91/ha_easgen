@@ -7,6 +7,5 @@
     "zip_release": true,
     "filename": "easgen.zip",
     "hide_default_branch": true,
-    "iot_class": "Local Polling",
     "homeassistant": "2023.3"
   }

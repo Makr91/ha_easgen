@@ -31,7 +31,7 @@ jobs:
           yq -i -o json '.version="${{ steps.previoustag.outputs.tag }}"' \
             "${{ github.workspace }}/custom_components/ha_easgen/manifest.json"
 
-      - name: "ZIP the integration directory"
+      - name: "Archiving the integration directory"
         shell: "bash"
         run: |
           cd "${{ github.workspace }}/custom_components/ha_easgen"

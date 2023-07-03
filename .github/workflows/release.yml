@@ -26,34 +26,34 @@ jobs:
           package-name: ha_easgen
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true
-  
-  publish:
-    needs: release-please
-    if: ${{ needs.release-please.outputs.exists }}
-    runs-on: ubuntu-latest
-    steps:
+
       - name: "Checkout the repository"
         uses: "actions/checkout@v3.5.2"
         with:
           fetch-depth: 0
+        if: ${{ steps.release.outputs.release_created }}
 
       - name: 'Get Previous tag'
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        if: ${{ steps.release.outputs.release_created }}
 
       - name: Patch manifest and zip
         run: |
           yq -i -o json '.version="${{ steps.previoustag.outputs.tag }}"' \
             "${{ github.workspace }}/custom_components/ha_easgen/manifest.json"
+        if: ${{ steps.release.outputs.release_created }}
 
       - name: "Archiving the integration directory"
         shell: "bash"
         run: |
           cd "${{ github.workspace }}/custom_components/ha_easgen"
           zip ha_easgen.zip -r ./
+        if: ${{ steps.release.outputs.release_created }}
 
       - name: "Upload the ZIP file to the release"
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: ${{ github.workspace }}/custom_components/ha_easgen/ha_easgen.zip
           tag_name: ${{ steps.previoustag.outputs.tag }}
+        if: ${{ steps.release.outputs.release_created }}

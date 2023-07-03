@@ -10,7 +10,8 @@ permissions:
   pull-requests: write
   
 jobs:
-  release-please:
+  if_merged:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the repository"

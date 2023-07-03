@@ -1,5 +1,5 @@
 {
-    "domain": "easgen",
+    "domain": "ha_easgen",
     "name": "Emergency Alert System Generator",
     "after_dependencies": [
       "mqtt",

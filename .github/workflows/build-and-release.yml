@@ -21,4 +21,4 @@ jobs:
           package-name: ha_easgen
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true
-          version-file: ""
+          version-file: "custom_components/easgen/manifest.json"

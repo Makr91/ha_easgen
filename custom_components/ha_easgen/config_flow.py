@@ -91,7 +91,6 @@ class EASGenConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_NAME): cv.string,
                     vol.Required(CONF_HOST): cv.string,
-                    vol.Required(CONF_PORT, default=DEFAULT_PORT): cv.positive_int,
                 }
             ),
             errors=errors,

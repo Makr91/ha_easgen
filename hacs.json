@@ -3,9 +3,6 @@
     "country": [
       "US"
     ],
-    "domains": [
-      "sensor"
-    ],
     "render_readme": true,
     "zip_release": true,
     "filename": "easgen.zip",

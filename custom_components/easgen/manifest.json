@@ -5,9 +5,16 @@
     "codeowners": [
       "@Makr91"
     ],
+    "after_dependencies": [
+      "mqtt",
+      "notify"
+     ],
+    "dependencies": [
+      "http"
+    ],
     "config_flow": true,
     "documentation": "https://github.com/makr91/ha_easgen",
-    "iot_class": "calculated",
+    "iot_class": "local_push",
     "issue_tracker": "https://github.com/makr91/ha_easgen/issues",
-    "version": "0.0.1"
+    "version": "v0.0.0"
 }

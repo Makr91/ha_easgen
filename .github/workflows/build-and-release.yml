@@ -13,6 +13,21 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - name: Get version
+        id: version
+        uses: home-assistant/actions/helpers/version@master
+      - name: Patch manifest and zip
+        run: |
+          sed -i 's/v0.0.0/${{ steps.version.outputs.version }}/' custom_components/easgen/manifest.json
+        
+          cd custom_components/easgen/
+          zip ../../easgen.zip ./* frontend/dist/* -x '.*'
+      - uses: JasonEtco/upload-to-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: ./easgen.zip application/zip
       - 
         name: Release-Please
         id: release
@@ -23,4 +38,21 @@ jobs:
           package-name: ha_easgen
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true
-          version-file: "custom_components/easgen/manifest.json"
+
+
+
+    steps:
+
+
+
+      - name: Patch manifest and zip
+        run: |
+          sed -i 's/v0.0.0/${{ steps.version.outputs.version }}/' custom_components/alarmo/manifest.json
+        
+          cd custom_components/alarmo/
+          zip ../../alarmo.zip ./* frontend/dist/* -x '.*'
+      - uses: JasonEtco/upload-to-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: ./alarmo.zip application/zip

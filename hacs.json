@@ -7,8 +7,9 @@
       "sensor"
     ],
     "render_readme": true,
-    "zip_release": false,
+    "zip_release": true,
+    "filename": "easgen.zip",
     "hide_default_branch": true,
     "iot_class": "Local Polling",
-    "homeassistant": "2021.3"
+    "homeassistant": "2023.3"
   }

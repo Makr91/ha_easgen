@@ -25,7 +25,6 @@ jobs:
           bump-patch-for-minor-pre-major: true
   if_merged:
     needs: release-please
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
 

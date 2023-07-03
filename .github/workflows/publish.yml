@@ -16,10 +16,15 @@ jobs:
     steps:
       - name: "Checkout the repository"
         uses: "actions/checkout@v3.5.2"
+        with:
+          fetch-depth: 0
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
 
       - name: Patch manifest and zip
         run: |
-          sed -i 's/v0.0.0/${{ github.event.release.tag_name }}/' custom_components/easgen/manifest.json
+          sed -i 's/v0.0.0/${{ steps.previoustag.outputs.tag }}/' custom_components/easgen/manifest.json
  
       - name: "ZIP the integration directory"
         shell: "bash"

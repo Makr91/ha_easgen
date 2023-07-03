@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.19](https://github.com/Makr91/ha_easgen/compare/v0.1.18...v0.1.19) (2023-07-03)
+
+
+### Bug Fixes
+
+* workflow revisions ([51e8f20](https://github.com/Makr91/ha_easgen/commit/51e8f206a046e414b31c65ed996fd368edf1cc0c))
+
 ## [0.1.18](https://github.com/Makr91/ha_easgen/compare/v0.1.17...v0.1.18) (2023-07-03)
 
 

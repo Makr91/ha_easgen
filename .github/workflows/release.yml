@@ -30,7 +30,7 @@ jobs:
         uses: home-assistant/actions/helpers/version@master
       - name: Patch manifest and zip
         run: |
-          sed -i 's/v0.0.0/${{ steps.version.outputs.version }}/' custom_components/easgen/manifest.json
+          sed -i 's/v0.0.0/${{ steps.release.outputs}}/' custom_components/easgen/manifest.json
         
           cd custom_components/easgen/
           zip ../../easgen.zip ./* 

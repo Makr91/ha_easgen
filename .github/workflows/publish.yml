@@ -1,11 +1,8 @@
 name: Publish
 
 on:
-  pull_request:
-    types:
-      - closed
-    branches:
-      - "release-please--branches--main"
+    workflows: [Release]
+    types: [completed]
 
 permissions:
   contents: write
@@ -13,7 +10,7 @@ permissions:
   
 jobs:
   publish:
-    if: github.event.pull_request.merged == true
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the repository"

@@ -38,21 +38,3 @@ jobs:
           package-name: ha_easgen
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true
-
-
-
-    steps:
-
-
-
-      - name: Patch manifest and zip
-        run: |
-          sed -i 's/v0.0.0/${{ steps.version.outputs.version }}/' custom_components/alarmo/manifest.json
-        
-          cd custom_components/alarmo/
-          zip ../../alarmo.zip ./* frontend/dist/* -x '.*'
-      - uses: JasonEtco/upload-to-release@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: ./alarmo.zip application/zip

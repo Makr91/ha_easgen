@@ -1,6 +1,6 @@
 name: Publish
-
 on:
+  workflow_run:
     workflows: [Release]
     types: [completed]
 

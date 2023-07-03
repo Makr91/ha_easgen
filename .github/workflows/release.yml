@@ -34,8 +34,8 @@ jobs:
         
           cd custom_components/easgen/
           zip ../../easgen.zip ./* 
-      - uses: JasonEtco/upload-to-release@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          args: ./easgen.zip application/zip
+          files: easgen.zip

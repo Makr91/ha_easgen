@@ -13,8 +13,6 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-
-
       - 
         name: Release-Please
         id: release
@@ -25,6 +23,7 @@ jobs:
           package-name: ha_easgen
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true
+          
       - name: GitHub Tag Name example
         run: |
           echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
@@ -46,22 +45,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: GitHub Tag Name example
-        run: |
-          echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
-          echo "Tag name from github.ref_name: ${{  github.ref_name }}"
 
-      - name: Set output
-        id: vars
-        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-
-      - name: Check output
-        env:
-          RELEASE_VERSION: ${{ steps.vars.outputs.release }}
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ steps.vars.outputs.tag }}
-          
       - name: 'Get Previous tag'
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"

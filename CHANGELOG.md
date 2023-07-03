@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/Makr91/ha_easgen/compare/v0.1.0...v0.1.1) (2023-07-03)
+
+
+### Bug Fixes
+
+* all the bugs ([d54258a](https://github.com/Makr91/ha_easgen/commit/d54258ad74b57efe51b7bd5e0cbec8fd4bee5499))
+* all the bugs ([723e075](https://github.com/Makr91/ha_easgen/commit/723e075a2f1242f61d2c6484a28f13ce584f9669))
+
 ## 0.1.0 (2023-07-03)
 
 

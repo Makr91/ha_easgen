@@ -3,3 +3,4 @@
 DOMAIN = "ha_easgen"
 ICON = "mdi:flash-alert"
 DEFAULT_NAME = "Emergency Alert System"
+DEFAULT_PORT = 6680

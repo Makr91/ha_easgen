@@ -17,3 +17,6 @@ jobs:
         days-before-close: 7
         operations-per-run: 500
         exempt-issue-labels: 'will pick this up at some point'
+
+        git config --global user.email "mark.gilbert@prominic.net"
+        git config --global user.name "MarkProminic"

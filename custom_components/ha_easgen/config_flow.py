@@ -3,14 +3,7 @@ import logging
 import re
 import socket
 import requests
-import sys
-
 from typing import Optional
-
-from EASGen import EASGen
-from pydub.playback import play
-from datetime import datetime, timedelta, timezone
-from dateutil import parser
 
 import voluptuous as vol
 
@@ -20,6 +13,7 @@ from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.typing import DiscoveryInfoType
 
+from .const import DEFAULT_PORT, DOMAIN  # pylint: disable=unused-import
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -91,6 +85,7 @@ class EASGenConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_NAME): cv.string,
                     vol.Required(CONF_HOST): cv.string,
+                    vol.Required(CONF_PORT, default=DEFAULT_PORT): cv.positive_int,
                 }
             ),
             errors=errors,

@@ -11,7 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import generate_entity_id
-from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN
+from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN, STATES
 
 from .eventcodes import SAME, FIPS
 from .eas_gen_tts_engine import playHeader, playEndofMessage

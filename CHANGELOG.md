@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.22](https://github.com/Makr91/ha_easgen/compare/v0.1.21...v0.1.22) (2024-08-31)
+
+
+### Bug Fixes
+
+* add more variables to configs ([33fce46](https://github.com/Makr91/ha_easgen/commit/33fce46feeeb852953ff2f4844d1a64e4324fdc4))
+* Test Next Release ([d9ca27c](https://github.com/Makr91/ha_easgen/commit/d9ca27c072846d23f5d8624366497d777cfbba2d))
+* workflow revisions ([71626da](https://github.com/Makr91/ha_easgen/commit/71626da844ad39b8b0d91cc1fd8f1f7fba9baf66))
+
 ## [0.1.21](https://github.com/Makr91/ha_easgen/compare/v0.1.20...v0.1.21) (2023-07-03)
 
 

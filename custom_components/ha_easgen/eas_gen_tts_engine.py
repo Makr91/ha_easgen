@@ -35,8 +35,8 @@ class EASGenTTSEngine:
 
     def get_notifications(self, sensor: str):
         alert_number = 0
-         _LOGGER.warning("Entered get_notifications function")
-         _LOGGER.warning(sensor)
+        _LOGGER.warning("Entered get_notifications function")
+        _LOGGER.warning(sensor)
         for alert in sensor:
                 alert_number += 1
                 #log.warning("Alert #" + str(alert_number))

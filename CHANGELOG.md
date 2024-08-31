@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.25](https://github.com/Makr91/ha_easgen/compare/v0.1.24...v0.1.25) (2024-08-31)
+
+
+### Bug Fixes
+
+* add more variables to configs: UNIQUE_ID ([a7f7da5](https://github.com/Makr91/ha_easgen/commit/a7f7da5b359a2f2613c09f7c860046a52af22409))
+
 ## [0.1.24](https://github.com/Makr91/ha_easgen/compare/v0.1.23...v0.1.24) (2024-08-31)
 
 

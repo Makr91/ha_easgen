@@ -13,18 +13,13 @@ from homeassistant.config_entries import ConfigFlow
 from homeassistant.helpers.selector import selector
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN, STATES
+from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN, STATES, UNIQUE_ID
 
 _LOGGER = logging.getLogger(__name__)
 
 def generate_unique_id(user_input: dict) -> str:
     """Generate a unique id from user input."""
     return f"{user_input[STATE]}_{user_input[COUNTY]}_{user_input[ZONE]}_{user_input[CALL_SIGN]}"
-
-def generate_unique_id(user_input: dict) -> str:
-    """Generate a unique id from user input."""
-    url = urlparse(user_input[CONF_URL])
-    return f"{url.hostname}_{user_input[CONF_MODEL]}_{user_input[CONF_VOICE]}"
 
 async def validate_user_input(user_input: dict):
     """Validate user input fields."""

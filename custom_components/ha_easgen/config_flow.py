@@ -13,13 +13,13 @@ from homeassistant.config_entries import ConfigFlow
 from homeassistant.helpers.selector import selector
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY
+from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN
 
 _LOGGER = logging.getLogger(__name__)
 
 def generate_unique_id(user_input: dict) -> str:
     """Generate a unique id from user input."""
-    return f"{user_input[DOMAIN]}_{user_input[STATE]}_{user_input[COUNTY]}"
+    return f"{user_input[DOMAIN]}_{user_input[STATE]}_{user_input[COUNTY]}_{user_input[CALL_SIGN]}"
 
 async def validate_user_input(user_input: dict):
     """Validate user input fields."""
@@ -32,8 +32,9 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for EAS TTS Generator."""
     VERSION = 1
     data_schema = vol.Schema({
-        vol.Optional(ZONE, default=1): vol.Coerce(int),
-        vol.Optional(COUNTY, default=1): vol.Coerce(int),
+        vol.Optional(CALL_SIGN, default="KF5NTR"): str,
+        vol.Optional(ZONE, default=10): vol.Coerce(int),
+        vol.Optional(COUNTY, default=10): vol.Coerce(int),
         vol.Required(STATE, default="IL"): selector({
             "select": {
                 "options": STATES,
@@ -55,7 +56,7 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
                 #hostname = urlparse(user_input[CONF_URL]).hostname
-                return self.async_create_entry(title=f"EAS Gen ({user_input[STATE]}, {user_input[ZONE]}, {user_input[COUNTY]})", data=user_input)
+                return self.async_create_entry(title=f"EAS Gen ({user_input[STATE]}, {user_input[ZONE]}, {user_input[COUNTY]}, {user_input[CALL_SIGN]})", data=user_input)
             except data_entry_flow.AbortFlow:
                 return self.async_abort(reason="already_configured")
             except HomeAssistantError as e:

@@ -7,6 +7,7 @@ DEFAULT_PORT = 6680
 STATE = "IL"
 ZONE = "15"
 COUNTY = "20"
+CALL_SIGN = "KF5NTR"
 STATES = [
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", 
     "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", 

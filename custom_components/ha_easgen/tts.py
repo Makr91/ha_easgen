@@ -11,7 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import generate_entity_id
-from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY
+from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN
 
 from .eventcodes import SAME, FIPS
 from .eas_gen_tts_engine import playHeader, playEndofMessage
@@ -29,6 +29,7 @@ async def async_setup_entry(
     """Set up EAS Generator Text-to-speech platform via config entry."""
 
     engine = EASGenTTSEngine(
+        config_entry.data[CALL_SIGN],
         config_entry.data[STATE],
         config_entry.data[ZONE],
         config_entry.data[COUNTY]

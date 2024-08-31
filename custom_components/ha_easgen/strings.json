@@ -1,0 +1,25 @@
+{
+    "config": {
+      "step": {
+        "user": {
+          "title": "Configure EASGen",
+          "description": "Provide configuration data. See documentation for further info.",
+          "data": {
+            "state": "2 Digit State ID, e.g: IL.",
+            "zone": "Zone ID (drop any preceding zeros)",
+            "county": "county ID (drop any preceding zeros)."
+          }
+        }
+      },
+      "error": {
+        "invalid_state": "Invalid State ID Provided.",
+        "invalid_zone": "Invalid Zone ID Provided.",
+        "invalid_county": "Invalid County ID Provided.",
+        "already_configured": "This Integration has already been configured."
+      },
+      "abort": {
+        "already_configured": "This Integration has already been configured."
+      }
+    }
+  }
+  

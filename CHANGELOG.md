@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.23](https://github.com/Makr91/ha_easgen/compare/v0.1.22...v0.1.23) (2024-08-31)
+
+
+### Bug Fixes
+
+* add more variables to configs ([1bd0fa1](https://github.com/Makr91/ha_easgen/commit/1bd0fa17c44deb4a1ae182e4d3e84e549c4ea488))
+
 ## [0.1.22](https://github.com/Makr91/ha_easgen/compare/v0.1.21...v0.1.22) (2024-08-31)
 
 

@@ -1,28 +1,22 @@
-# Integration Emergency Alert System
+# Emergency Alert System Generator
 
-[![GitHub Release][releases-shield]][releases]
-[![GitHub Activity][commits-shield]][commits]
-[![License][license-shield]](LICENSE)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/Makr91/ha_easgen?style=plastic)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=plastic)](https://github.com/hacs/integration)
+![Project Stage](https://img.shields.io/badge/project%20stage-development-yellow.svg?style=plastic)
+![GitHub all releases](https://img.shields.io/github/downloads/Makr91/ha_easgen/total?style=plastic)
 
-[![hacs][hacsbadge]][hacs]
-![Project Maintenance][maintenance-shield]
-[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
-
-[![Discord][discord-shield]][discord]
-[![Community Forum][forum-shield]][forum]
-
-_Integration to integrate with [integration_blueprint][integration_blueprint]._
-
-**This integration will set up the following platforms.**
-
-# Home Assitant integrations
-Additional integrations for [Home Assistant](https://www.home-assistant.io/)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/Makr91/ha_easgen/latest?style=plastic)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Makr91/ha_easgen?style=plastic)
+![GitHub Release Workflow Status](https://img.shields.io/github/actions/workflow/status/Makr91/ha_easgen/release.yml?style=plastic)
 
 ## Emergency Alert System
-This is a platform integration for [Emergency Alert System](https://www.fcc.gov/emergency-alert-system)
+This is a platform integration for [Emergency Alert System](https://www.fcc.gov/emergency-alert-system) for Home Assistant to Generate a the EAS Alerts for Satellites.
 
 ### Installation
+
+#### Pre-Requisites
 Please look at the [WeatherAlerts installation & configuration instructions](https://github.com/custom-components/weatheralerts) to set up Weather Alerts first.
+
 
 #### HACS
 1. Install [HACS](https://hacs.xyz)

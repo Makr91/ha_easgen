@@ -2,20 +2,14 @@
 Setting up TTS entity.
 """
 import logging
-import requests
-import sys
-from datetime import datetime, timedelta, timezone
-from dateutil import parser
 from homeassistant.components.tts import TextToSpeechEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import generate_entity_id
-from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN, STATES, UNIQUE_ID
+from .const import ICON, NAME, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN, STATES, UNIQUE_ID, ORG, SENSOR, TTS_ENGINE
 
-from .eventcodes import SAME, FIPS
-from .eas_gen_tts_engine import playHeader, playEndofMessage
-from pydub.playback import play
+from .eas_gen_tts_engine import EASGenTTSEngine
 
 from homeassistant.exceptions import MaxLengthExceeded
 
@@ -29,13 +23,15 @@ async def async_setup_entry(
     """Set up EAS Generator Text-to-speech platform via config entry."""
 
     engine = EASGenTTSEngine(
+        config_entry.data[SENSOR],
+        config_entry.data[TTS_ENGINE],
+        config_entry.data[ORG],
         config_entry.data[CALL_SIGN],
         config_entry.data[STATE],
         config_entry.data[ZONE],
         config_entry.data[COUNTY]
     )
     async_add_entities([EASGenTTSEntity(hass, config_entry, engine)])
-
 
 class EASGenTTSEntity(TextToSpeechEntity):
     """The EAS Generator TTS entity."""
@@ -82,8 +78,8 @@ class EASGenTTSEntity(TextToSpeechEntity):
         try:
             if len(message) > 4096:
                 raise MaxLengthExceeded
-
-            speech = self._engine.get_tts(message)
+            newmessage = self._engine.get_notifications(self._config.data[SENSOR])
+            speech = self._engine.get_tts(newmessage)
 
             # The response should contain the audio file content
             return "wav", speech.content

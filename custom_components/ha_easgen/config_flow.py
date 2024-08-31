@@ -13,7 +13,7 @@ from homeassistant.config_entries import ConfigFlow
 from homeassistant.helpers.selector import selector
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import ICON, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN, STATES, UNIQUE_ID
+from .const import ICON, NAME, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN, STATES, UNIQUE_ID, ORG, SENSOR, TTS_ENGINE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,16 +23,19 @@ def generate_unique_id(user_input: dict) -> str:
 
 async def validate_user_input(user_input: dict):
     """Validate user input fields."""
-    if user_input.get(STATE) is None:
-        raise ValueError("STATE is required")
-    if user_input.get(ZONE) is None:
-        raise ValueError("ZONE is required")
+    if user_input.get(SENSOR) is None:
+        raise ValueError("Alert Sensor is required")
+    if user_input.get(TTS_ENGINE) is None:
+        raise ValueError("Default TTS Engine is required")
 
 class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for EAS TTS Generator."""
     VERSION = 1
     data_schema = vol.Schema({
+        vol.Optional(TTS_ENGINE, default="tts.piper"): str,
+        vol.Optional(SENSOR, default="sensor.weather_alerts.alerts"): str,
         vol.Optional(CALL_SIGN, default="KF5NTR"): str,
+        vol.Optional(ORG, default="EAS"): str,
         vol.Optional(ZONE, default=10): vol.Coerce(int),
         vol.Optional(COUNTY, default=10): vol.Coerce(int),
         vol.Required(STATE, default="IL"): selector({
@@ -56,7 +59,7 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
                 #hostname = urlparse(user_input[CONF_URL]).hostname
-                return self.async_create_entry(title=f"EAS Gen ({user_input[STATE]}, {user_input[ZONE]}, {user_input[COUNTY]}, {user_input[CALL_SIGN]})", data=user_input)
+                return self.async_create_entry(title=f"EAS Gen ({user_input[STATE]}, {user_input[ZONE]}, {user_input[COUNTY]}, {user_input[CALL_SIGN]}, {user_input[ORG]})", data=user_input)
             except data_entry_flow.AbortFlow:
                 return self.async_abort(reason="already_configured")
             except HomeAssistantError as e:

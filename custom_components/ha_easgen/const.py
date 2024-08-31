@@ -2,12 +2,14 @@
 
 DOMAIN = "ha_easgen"
 ICON = "mdi:flash-alert"
-DEFAULT_NAME = "Emergency Alert System"
-DEFAULT_PORT = 6680
+NAME = "Emergency Alert System"
+SENSOR = "sensor.weather_alerts.alerts"
 STATE = "IL"
 ZONE = "15"
 COUNTY = "20"
 CALL_SIGN = "KF5NTR"
+ORG = "EAS"
+TTS_ENGINE = "tts.piper"
 UNIQUE_ID = 'unique_id'
 STATES = [
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", 

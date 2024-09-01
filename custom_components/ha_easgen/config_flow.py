@@ -12,16 +12,18 @@ from homeassistant import data_entry_flow
 from homeassistant.config_entries import ConfigFlow
 from homeassistant.helpers.selector import selector
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_registry import async_get
 
-from .const import ICON, NAME, DOMAIN, STATE, ZONE, COUNTY, CALL_SIGN, STATES, UNIQUE_ID, ORG, SENSOR, TTS_ENGINE
+from .const import ICON, NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, ORGS, SENSOR, TTS_ENGINE, VOICE, LANGUAGE, AVAIL_LANGUAGES
 
 _LOGGER = logging.getLogger(__name__)
 
 def generate_unique_id(user_input: dict) -> str:
     """Generate a unique id from user input."""
-    return f"{user_input[STATE]}_{user_input[COUNTY]}_{user_input[ZONE]}_{user_input[CALL_SIGN]}"
+    return f"emergency_alert_system_tts_{user_input[SENSOR]}_{user_input[TTS_ENGINE]}_{CALL_SIGN}_{ORG}"
 
-async def validate_user_input(user_input: dict):
+async def validate_user_input(hass: HomeAssistant, user_input: dict):
     """Validate user input fields."""
     if user_input.get(SENSOR) is None:
         raise ValueError("Alert Sensor is required")
@@ -31,44 +33,87 @@ async def validate_user_input(user_input: dict):
 class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for EAS TTS Generator."""
     VERSION = 1
-    data_schema = vol.Schema({
-        vol.Optional(TTS_ENGINE, default="tts.piper"): str,
-        vol.Optional(SENSOR, default="sensor.weather_alerts.alerts"): str,
-        vol.Optional(CALL_SIGN, default="KF5NTR"): str,
-        vol.Optional(ORG, default="EAS"): str,
-        vol.Optional(ZONE, default=10): vol.Coerce(int),
-        vol.Optional(COUNTY, default=10): vol.Coerce(int),
-        vol.Required(STATE, default="IL"): selector({
-            "select": {
-                "options": STATES,
-                "mode": "dropdown",
-                "sort": True,
-                "custom_value": True
-            }
-        })
-    })
+
+    async def async_get_tts_entities(self, hass: HomeAssistant):
+        """Get a list of available TTS entities."""
+        entity_registry = async_get(hass)
+        tts_entities = [
+            entity.entity_id
+            for entity in entity_registry.entities.values()
+            if entity.domain == "tts"
+        ]
+        return tts_entities
+
+    async def async_get_weatheralerts_sensors(self, hass: HomeAssistant):
+        """Get a list of sensor entities with integration attribute set to 'weatheralerts'."""
+        entity_registry = async_get(hass)
+        weatheralerts_sensors = [
+            entity.entity_id
+            for entity in entity_registry.entities.values()
+            if entity.domain == "sensor" and 
+               entity.platform == "weatheralerts"
+        ]
+        return weatheralerts_sensors
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
         """Handle the initial step."""
         errors = {}
-        if user_input is not None:
-            try:
-                await validate_user_input(user_input)
-                unique_id = generate_unique_id(user_input)
-                user_input[UNIQUE_ID] = unique_id
-                await self.async_set_unique_id(unique_id)
-                self._abort_if_unique_id_configured()
-                #hostname = urlparse(user_input[CONF_URL]).hostname
-                return self.async_create_entry(title=f"EAS Gen ({user_input[STATE]}, {user_input[ZONE]}, {user_input[COUNTY]}, {user_input[CALL_SIGN]}, {user_input[ORG]})", data=user_input)
-            except data_entry_flow.AbortFlow:
-                return self.async_abort(reason="already_configured")
-            except HomeAssistantError as e:
-                _LOGGER.exception(str(e))
-                errors["base"] = str(e)
-            except ValueError as e:
-                _LOGGER.exception(str(e))
-                errors["base"] = str(e)
-            except Exception as e:  # pylint: disable=broad-except
-                _LOGGER.exception(str(e))
-                errors["base"] = "unknown_error"
-        return self.async_show_form(step_id="user", data_schema=self.data_schema, errors=errors, description_placeholders=user_input)
+        if user_input is None:
+            tts_entities = await self.async_get_tts_entities(self.hass)
+            weatheralerts_sensors = await self.async_get_weatheralerts_sensors(self.hass)
+            data_schema = vol.Schema({
+                vol.Required(TTS_ENGINE, default=tts_entities[0] if tts_entities else ""): selector({
+                    "select": {
+                        "options": tts_entities,
+                        "mode": "dropdown",
+                        "sort": True,
+                        "custom_value": True
+                    }
+                }),
+                vol.Required(SENSOR, default=weatheralerts_sensors[0] if weatheralerts_sensors else ""): selector({
+                    "select": {
+                        "options": weatheralerts_sensors,
+                        "mode": "dropdown",
+                        "sort": True,
+                        "custom_value": True
+                    }
+                }),
+                vol.Optional(CALL_SIGN, default="KF5NTR"): str,
+                vol.Required(ORG, default="EAS"): selector({
+                    "select": {
+                        "options": ORGS,
+                        "mode": "dropdown",
+                        "sort": True,
+                        "custom_value": True
+                    }
+                }),
+                vol.Required(VOICE, default="default"): str,
+                vol.Required(LANGUAGE, default="en-us"): selector({
+                    "select": {
+                        "options": AVAIL_LANGUAGES,
+                        "mode": "dropdown",
+                        "sort": True,
+                        "custom_value": True
+                    }
+                })
+            })
+            return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
+        
+        try:
+            await validate_user_input(self.hass, user_input)
+            unique_id = generate_unique_id(user_input)
+            user_input[UNIQUE_ID] = unique_id
+            await self.async_set_unique_id(unique_id)
+            self._abort_if_unique_id_configured()
+            return self.async_create_entry(title=NAME, data=user_input)
+        except data_entry_flow.AbortFlow:
+            return self.async_abort(reason="already_configured")
+        except HomeAssistantError as e:
+            _LOGGER.exception(str(e))
+            errors["base"] = str(e)
+        except ValueError as e:
+            _LOGGER.exception(str(e))
+            errors["base"] = str(e)
+        except Exception as e:  # pylint: disable=broad-except
+            _LOGGER.exception(str(e))
+            errors["base"] = "unknown_error"

@@ -5,6 +5,10 @@ import csv
 import os
 import json
 
+import logging
+
+_LOGGER = logging.getLogger(__name__)
+
 document_id = "1msvlkDtCgO42IRoIxX9z5IIDQU0Ocq5eLvbW_E__awA"
 
 SAME_sheet_id = "0"
@@ -14,8 +18,8 @@ SAME_sheet = "https://docs.google.com/spreadsheets/d/" + document_id + "/export?
 FIPS_sheet = "https://docs.google.com/spreadsheets/d/" + document_id + "/export?format=csv&gid=" + FIPS_sheet_id
 
 # Cache file paths
-SAME_cache_file = "SAME_cache.json"
-FIPS_cache_file = "FIPS_cache.json"
+SAME_cache_file = "custom_components/ha_easgen/cache/SAME_cache.json"
+FIPS_cache_file = "custom_components/ha_easgen/cache/FIPS_cache.json"
 
 def load_data_from_cache(cache_file):
     if os.path.exists(cache_file):

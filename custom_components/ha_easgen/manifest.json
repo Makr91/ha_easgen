@@ -1,22 +1,23 @@
 {
-    "domain": "ha_easgen",
-    "name": "Emergency Alert System Generator",
-    "after_dependencies": [
-      "mqtt",
-      "notify"
-     ],
-    "codeowners": [
-      "@Makr91"
-    ],
-    "config_flow": true,
-    "dependencies": [
-      "http"
-    ],
-    "documentation": "https://github.com/makr91/ha_easgen",
-    "iot_class": "cloud_polling",
-    "issue_tracker": "https://github.com/makr91/ha_easgen/issues",
-    "requirements": [
-      "pydub", "easgen"
-    ],
-    "version": "v0.1.21"
+  "domain": "ha_easgen",
+  "name": "Emergency Alert System Generator",
+  "after_dependencies": [
+    "mqtt",
+    "notify"
+  ],
+  "codeowners": [
+    "@Makr91"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "http"
+  ],
+  "documentation": "https://github.com/makr91/ha_easgen",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/makr91/ha_easgen/issues",
+  "requirements": [
+    "pydub",
+    "easgen"
+  ],
+  "version": "v0.1.26"
 }

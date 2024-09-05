@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.27](https://github.com/Makr91/ha_easgen/compare/v0.1.26...v0.1.27) (2024-09-05)
+
+
+### Bug Fixes
+
+* add translations for proper labels for custom components ([80ddd19](https://github.com/Makr91/ha_easgen/commit/80ddd19aa531068de645cb73719986ed047da2a5))
+* alot -- Pre 1.0.0 commit ([86d740f](https://github.com/Makr91/ha_easgen/commit/86d740f6edf139e1562a7086ea4d0caf3f956fd6))
+* Fixing the Name of the Device and allowing multiple configurations ([da62226](https://github.com/Makr91/ha_easgen/commit/da62226407077b6c01cca4a62c870e43c5b6bdbc))
+
 ## [0.1.26](https://github.com/Makr91/ha_easgen/compare/v0.1.25...v0.1.26) (2024-08-31)
 
 

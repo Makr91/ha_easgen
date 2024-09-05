@@ -40,22 +40,6 @@ Please look at the [WeatherAlerts installation & configuration instructions](htt
 2. Select *Emergency Alert System* in the list of integrations
 3. Click Submit.
 
-
-#### Manual Configuration
-1. add a media player to your home assistant configuration (`<config dir>/configuration.yaml`):
-
-```yaml
-
-```
-2. Restart your Home assistant to make changes take effect.
-
-### Configuration
-
-```yaml
-
-```
-
-
 ### Notes
 This is an Early alpha build, please do NOT rely on this!
 

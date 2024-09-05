@@ -15,7 +15,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_registry import async_get
 
-from .const import ICON, NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, ORGS, SENSOR, TTS_ENGINE, VOICE, LANGUAGE, AVAIL_LANGUAGES
+from .const import NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, ORGS, SENSOR, TTS_ENGINE, VOICE, LANGUAGE, AVAIL_LANGUAGES
 
 _LOGGER = logging.getLogger(__name__)
 

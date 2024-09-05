@@ -2,8 +2,8 @@
   "domain": "ha_easgen",
   "name": "Emergency Alert System Generator",
   "after_dependencies": [
-    "mqtt",
-    "notify"
+    "weatheralerts",
+    "chime_tts"
   ],
   "codeowners": [
     "@Makr91"

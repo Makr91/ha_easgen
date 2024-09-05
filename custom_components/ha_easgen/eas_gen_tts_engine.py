@@ -1,11 +1,9 @@
 """EAS Header and Footer Module"""
-import requests
-import sys
 import logging
 from EASGen import EASGen
 import pydub
 from .const import AVAIL_LANGUAGES
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
 from dateutil import parser
 
@@ -29,7 +27,8 @@ class EASGenTTSEngine:
             "say_url",
             {
                 "tts_platform": self._tts_engine,
-                "message": text
+                "message": text,
+                "cache": "false"
             },
             return_response=True,
             blocking=True
@@ -43,28 +42,24 @@ class EASGenTTSEngine:
         
     def get_notifications(self):
         from .eventcodes import SAME, FIPS
-        # Protocol Header Reference:
-        # https://www.govinfo.gov/content/pkg/CFR-2010-title47-vol1/xml/CFR-2010-title47-vol1-sec11-31.xml
-        # <Preamble>ZCZC-ORG-EEE-PSSCCC+TTTT-JJJHHMM-LLLLLLLL-
         alert_number = 0
         attributes = self.hass.states.get(self._sensor).attributes
-        
+        results = []
+
         # Check if the "integration" attribute contains "weatheralerts" for the user selected sensor
         if "integration" in attributes and "weatheralerts" in attributes["integration"].lower():
-            # Process weather alerts
             for alert in attributes['alerts']:
                 alert_number += 1
                 _LOGGER.info("Alert #" + str(alert_number))
+
                 if alert is None:
                     continue
                 elif alert.get('severity') == 'Unknown':
                     continue
                 else:
                     CardinalLocation='0'
-                    # The use of county subdivisions will probably be rare and generally for oddly shaped or unusually large counties. Defaulting to All
-                    # https://www.govinfo.gov/content/pkg/CFR-2010-title47-vol1/xml/CFR-2010-title47-vol1-sec11-31.xml
-
-                    # Get the Event Code
+                    
+                    _LOGGER.debug("Gathering the Event Code from SAME data")
                     EventCode = ""
                     event = alert.get('event')
                     for item in SAME:
@@ -76,7 +71,7 @@ class EASGenTTSEngine:
                         _LOGGER.error(f"Event code not found for event: {event}")
                         continue
 
-                    # Get the Zone Data
+                    _LOGGER.debug("Gathering the Zone Data")
                     Zone = alert.get('zoneid').split(",")[0]
                     if len(Zone) >= 3:
                         ZoneState = Zone[:2]
@@ -85,7 +80,7 @@ class EASGenTTSEngine:
                         _LOGGER.warning(f"Skipping Zone with less than 3 characters: {Zone}")
                         continue
                    
-                    # Get the County Data
+                    _LOGGER.debug("Gathering the County Data")
                     County = alert.get('zoneid').split(",")[1]
                     if len(County) >= 3:
                         CountyState = County[:2]
@@ -94,16 +89,27 @@ class EASGenTTSEngine:
                         _LOGGER.warning(f"Skipping County with less than 3 characters: {County}")
                         continue
 
+                    _LOGGER.debug("Gathering the FIPs Data")
                     for item in FIPS:
                        if item["State"] == ZoneState:
                           StateCode = item["State Code"]
                           break
                       
-                    # Get the Titlee  
-                    title = alert.get('title')
-                    _LOGGER.warning(f"EAS ALERT!!: " + title)
+                    _LOGGER.debug("Gathering the Alert Spoken Title")
+                    spoken_title = alert.get('spoken_title')
+                    if spoken_title is None:
+                        title = alert.get('title')
+                        if title is None:
+                            spoken_title = "No Title for this Alert!"
+                            _LOGGER.warning(f"EAS ALERT!!: No Title!")
+                        else:
+                            spoken_title = title
+                            _LOGGER.warning(f"EAS ALERT!!: " + spoken_title)
+                    else:
+                        spoken_title = alert.get('spoken_title')
+                        _LOGGER.warning(f"EAS ALERT!!: " + spoken_title)
 
-                    ## Generating Date String
+                    _LOGGER.debug("Parsing the Alert Dates")
                     BeginTime = parser.parse(alert.get('onset'))
                     EndTime = parser.parse(alert.get('endsExpires'))
 
@@ -121,20 +127,23 @@ class EASGenTTSEngine:
                       PurgeDifference = divmod(diff.total_seconds(), 60)
                       PurgeTime = "00" + str(int(divmod(PurgeDifference[0], 15)[0] * 15)).zfill(2) 
 
-                    ## Creating EAS Protocol Header
+                    _LOGGER.debug("Generating the EAS Protocol Header String")
                     IssueTime = BeginTime.strftime('%j') + BeginTime.strftime('%H') + BeginTime.strftime('%M')
                     MinHeader = "ZCZC-" + self._org + "-" + EventCode + "-" + CardinalLocation + StateCode.zfill(2) + CountyCode.zfill(3) + "+" + PurgeTime.zfill(4) + "-" + IssueTime 
                     FullHeader = MinHeader + "-" + self._call_sign + "-"
 
-                    ## Logging EAS Protocol Header
                     _LOGGER.warning(f"EAS ALERT!!: " + FullHeader)
-                    return (MinHeader, title, FullHeader)
+                    
+                    _LOGGER.debug("Appending Data to Alerts to be Spoken List")
+                    results.append((MinHeader, spoken_title, FullHeader))
         else:
-            _LOGGER.info("Weather alerts integration not found")
+            _LOGGER.error("Weather alerts integration not found")
+        return results
 
     def get_header_audio(self, MinHeader, FullHeader):
         AlertHeader = EASGen.genEAS(header=FullHeader, attentionTone=True, endOfMessage=False)
         header_path = "/media/tts/" + MinHeader + "-Header.wav"
+        _LOGGER.debug("Generating EAS Header Audio")
         EASGen.export_wav(header_path, AlertHeader)
         header = pydub.AudioSegment.from_wav(header_path)
         return (header, header_path)
@@ -142,6 +151,7 @@ class EASGenTTSEngine:
     def get_footer_audio(self, MinHeader):
         AlertEndofMessage = EASGen.genEAS(header="", attentionTone=False, endOfMessage=True)
         footer_path = "/media/tts/" + MinHeader + "-EndofMessage.wav"
+        _LOGGER.debug("Generating EAS Footer Audio")
         EASGen.export_wav(footer_path, AlertEndofMessage)
         footer = pydub.AudioSegment.from_wav(footer_path)
         return (footer, footer_path)
@@ -150,4 +160,3 @@ class EASGenTTSEngine:
     def get_supported_langs() -> list:
         """Returns list of supported languages. Note: the state determines the provides language automatically."""
         return ["af", "ar", "hy", "az", "be", "bs", "bg", "ca", "zh", "hr", "cs", "da", "nl", "en-us", "en", "et", "fi", "fr", "gl", "de", "el", "he", "hi", "hu", "is", "id", "it", "ja", "kn", "kk", "ko", "lv", "lt", "mk", "ms", "mr", "mi", "ne", "no", "fa", "pl", "pt", "ro", "ru", "sr", "sk", "sl", "es", "sw", "sv", "tl", "ta", "th", "tr", "uk", "ur", "vi", "cy"]
-

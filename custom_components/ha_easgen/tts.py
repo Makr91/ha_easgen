@@ -8,7 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import generate_entity_id
-from .const import NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, SENSOR, TTS_ENGINE, VOICE, LANGUAGE, MANUFACTURER
+from .const import DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, SENSOR, TTS_ENGINE, VOICE, LANGUAGE, MANUFACTURER
 from .version import __version__ as VERSION
 from .eas_gen_tts_engine import EASGenTTSEngine
 from urllib.parse import quote
@@ -45,6 +45,7 @@ class EASGenTTSEntity(TextToSpeechEntity):
         self.hass = hass
         self._engine = engine
         self._config = config
+        self._name = config.data[SENSOR].lstrip("sensor.")
 
         self._attr_unique_id = config.data.get(UNIQUE_ID)
         if self._attr_unique_id is None:
@@ -72,9 +73,9 @@ class EASGenTTSEntity(TextToSpeechEntity):
         }
 
     @property
-    def name(self):
-        """Return name of entity"""
-        return NAME
+    def name(self) -> str:
+        """Return the name of the entity."""
+        return self._name
 
     def get_tts_audio(self, message, language, options=None):
         """Return EAS Header Audio, TTS, and End of Message Audio."""

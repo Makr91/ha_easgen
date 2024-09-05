@@ -1,5 +1,5 @@
 """Constants for the Emergency Alert System Generator integration."""
-NAME = "Emergency Alert System"
+DEFAULT_NAME = "Emergency Alert System"
 MANUFACTURER = "@Makr91"
 
 DOMAIN = "ha_easgen"
@@ -18,3 +18,6 @@ UNIQUE_ID = 'unique_id'
 LANGUAGE = 'language'
 VOICE = 'voice'
 AVAIL_LANGUAGES = ["af", "ar", "hy", "az", "be", "bs", "bg", "ca", "zh", "hr", "cs", "da", "nl", "en", "en-us", "et", "fi", "fr", "gl", "de", "el", "he", "hi", "hu", "is", "id", "it", "ja", "kn", "kk", "ko", "lv", "lt", "mk", "ms", "mr", "mi", "ne", "no", "fa", "pl", "pt", "ro", "ru", "sr", "sk", "sl", "es", "sw", "sv", "tl", "ta", "th", "tr", "uk", "ur", "vi", "cy"]
+MAX_PURGE_DIFFERENCE = 5940
+HOUR_IN_MINUTES = 60
+MINUTE_IN_SECONDS = 60

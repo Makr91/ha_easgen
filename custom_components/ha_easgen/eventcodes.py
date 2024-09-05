@@ -18,8 +18,9 @@ SAME_sheet = "https://docs.google.com/spreadsheets/d/" + document_id + "/export?
 FIPS_sheet = "https://docs.google.com/spreadsheets/d/" + document_id + "/export?format=csv&gid=" + FIPS_sheet_id
 
 # Cache file paths
-SAME_cache_file = "custom_components/ha_easgen/cache/SAME_cache.json"
-FIPS_cache_file = "custom_components/ha_easgen/cache/FIPS_cache.json"
+CACHE_DIR = "custom_components/ha_easgen/cache"
+SAME_cache_file = os.path.join(CACHE_DIR, "SAME_cache.json")
+FIPS_cache_file = os.path.join(CACHE_DIR, "FIPS_cache.json")
 
 def load_data_from_cache(cache_file):
     if os.path.exists(cache_file):

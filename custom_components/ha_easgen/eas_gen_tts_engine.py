@@ -2,7 +2,7 @@
 import logging
 from EASGen import EASGen
 import pydub
-from .const import AVAIL_LANGUAGES
+from .const import AVAIL_LANGUAGES, MAX_PURGE_DIFFERENCE, HOUR_IN_MINUTES, MINUTE_IN_SECONDS
 from datetime import timedelta
 from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
 from dateutil import parser
@@ -42,6 +42,7 @@ class EASGenTTSEngine:
         
     def get_notifications(self):
         from .eventcodes import SAME, FIPS
+        valid_severities = {'Unknown', 'Minor', 'Moderate', 'Severe', 'Extreme'}
         alert_number = 0
         attributes = self.hass.states.get(self._sensor).attributes
         results = []
@@ -52,7 +53,7 @@ class EASGenTTSEngine:
                 alert_number += 1
                 _LOGGER.info("Alert #" + str(alert_number))
 
-                if alert is None:
+                if alert.get('severity') not in valid_severities:
                     continue
                 elif alert.get('severity') == 'Unknown':
                     continue
@@ -115,17 +116,7 @@ class EASGenTTSEngine:
 
                     diff = EndTime - BeginTime
                     PurgeTimeDifference = int(diff / timedelta(minutes=1))
-                    if PurgeTimeDifference > 5940:
-                      PurgeTime = "9930"
-                    elif 360 < PurgeTimeDifference < 5940:
-                      PurgeDifference = divmod(diff.total_seconds(), 3600)
-                      PurgeTime = str(int(PurgeDifference[0])).zfill(2) + str(int(divmod(divmod(PurgeDifference[1], 60)[0], 60)[0]) * 60).zfill(2)
-                    elif 60 < PurgeTimeDifference < 360:
-                      PurgeDifference = divmod(diff.total_seconds(), 3600)
-                      PurgeTime = str(int(PurgeDifference[0])).zfill(2) + str(int(divmod(divmod(PurgeDifference[1], 60)[0], 30)[0]) * 30).zfill(2)
-                    elif PurgeTimeDifference < 60:
-                      PurgeDifference = divmod(diff.total_seconds(), 60)
-                      PurgeTime = "00" + str(int(divmod(PurgeDifference[0], 15)[0] * 15)).zfill(2) 
+                    PurgeTime = self.calculate_purge_time(PurgeTimeDifference)
 
                     _LOGGER.debug("Generating the EAS Protocol Header String")
                     IssueTime = BeginTime.strftime('%j') + BeginTime.strftime('%H') + BeginTime.strftime('%M')
@@ -139,6 +130,20 @@ class EASGenTTSEngine:
         else:
             _LOGGER.error("Weather alerts integration not found")
         return results
+
+    def calculate_purge_time(self, purge_diff):
+        if purge_diff > MAX_PURGE_DIFFERENCE:
+            return "9930"
+        elif purge_diff >= HOUR_IN_MINUTES:
+            hours, minutes = divmod(purge_diff, HOUR_IN_MINUTES)
+            if purge_diff >= MAX_PURGE_DIFFERENCE:
+                minutes = divmod(minutes, MINUTE_IN_SECONDS)[0] * MINUTE_IN_SECONDS
+            else:
+                minutes = divmod(minutes, MINUTE_IN_SECONDS / 2)[0] * (MINUTE_IN_SECONDS / 2)
+            return f"{int(hours):02d}{int(minutes):02d}"
+        else:
+            quarters = divmod(purge_diff, MINUTE_IN_SECONDS / 15)[0] * (MINUTE_IN_SECONDS / 15)
+            return f"00{int(quarters):02d}"
 
     def get_header_audio(self, MinHeader, FullHeader):
         AlertHeader = EASGen.genEAS(header=FullHeader, attentionTone=True, endOfMessage=False)

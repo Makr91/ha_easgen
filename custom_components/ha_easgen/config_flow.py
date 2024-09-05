@@ -3,9 +3,6 @@ from __future__ import annotations
 from typing import Any
 import voluptuous as vol
 import logging
-import re
-import socket
-import requests
 from urllib.parse import urlparse
 
 from homeassistant import data_entry_flow
@@ -15,7 +12,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_registry import async_get
 
-from .const import NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, ORGS, SENSOR, TTS_ENGINE, VOICE, LANGUAGE, AVAIL_LANGUAGES
+from .const import DEFAULT_NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, ORGS, SENSOR, TTS_ENGINE, VOICE, LANGUAGE, AVAIL_LANGUAGES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,8 +47,7 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
         weatheralerts_sensors = [
             entity.entity_id
             for entity in entity_registry.entities.values()
-            if entity.domain == "sensor" and 
-               entity.platform == "weatheralerts"
+            if entity.domain == "sensor" and entity.platform == "weatheralerts"
         ]
         return weatheralerts_sensors
 
@@ -105,7 +101,7 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
             user_input[UNIQUE_ID] = unique_id
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
-            return self.async_create_entry(title=NAME, data=user_input)
+            return self.async_create_entry(title=f"{DEFAULT_NAME}", data=user_input)
         except data_entry_flow.AbortFlow:
             return self.async_abort(reason="already_configured")
         except HomeAssistantError as e:

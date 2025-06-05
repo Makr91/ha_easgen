@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.28](https://github.com/Makr91/ha_easgen/compare/v0.1.27...v0.1.28) (2025-06-05)
+
+
+### Bug Fixes
+
+* bumping default version, adding dependabot ([eea014f](https://github.com/Makr91/ha_easgen/commit/eea014f922636207b29ce1575f663ea0d1f93095))
+
 ## [0.1.27](https://github.com/Makr91/ha_easgen/compare/v0.1.26...v0.1.27) (2024-09-05)
 
 

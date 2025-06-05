@@ -19,7 +19,7 @@ jobs:
       - 
         name: Release-Please
         id: release
-        uses: google-github-actions/release-please-action@v3
+        uses: google-github-actions/release-please-action@v4
         with:
           command: manifest
           default-branch: main
@@ -28,7 +28,7 @@ jobs:
           bump-patch-for-minor-pre-major: true
 
       - name: "Checkout the repository"
-        uses: "actions/checkout@v3.5.2"
+        uses: "actions/checkout@v4.2.2"
         with:
           fetch-depth: 0
         if: ${{ steps.release.outputs.release_created }}
@@ -52,7 +52,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
 
       - name: "Upload the ZIP file to the release"
-        uses: softprops/action-gh-release@v0.1.15
+        uses: softprops/action-gh-release@v2.2.2
         with:
           files: ${{ github.workspace }}/custom_components/ha_easgen/ha_easgen.zip
           tag_name: ${{ steps.previoustag.outputs.tag }}

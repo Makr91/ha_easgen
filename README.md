@@ -12,6 +12,28 @@
 ## Emergency Alert System
 This is a platform integration for [Emergency Alert System](https://www.fcc.gov/emergency-alert-system) for Home Assistant to Generate a the EAS Alerts for Satellites.
 
+### ⚠️ IMPORTANT LEGAL NOTICE
+
+**This integration generates Emergency Alert System (EAS) tones. The reproduction of EAS tones is strictly regulated by the Federal Communications Commission (FCC).**
+
+**FCC Regulations**: The FCC prohibits the unauthorized use of EAS attention signals, codes, or simulations thereof (47 CFR § 11.45). Violations can result in substantial monetary penalties ranging from tens of thousands to millions of dollars.
+
+**Intended Use**: This integration is designed to extend official emergency alerts to devices within your home that would not otherwise receive them. It uses official alert data sources to ensure the integrity of emergency information.
+
+**User Responsibility**: By installing and using this integration, you acknowledge that:
+- You are solely responsible for compliance with all applicable laws and regulations
+- You will NOT play EAS tones in public places without proper authorization
+- This is intended for private, in-home use only
+- You understand the potential legal consequences of misuse
+
+**Reliability Warning**: This integration may not be reliable and should NOT be depended upon as your sole source of emergency alerts. Technical failures, network issues, or software bugs may prevent alerts from being delivered or played correctly. Always maintain multiple methods of receiving emergency information.
+
+**NO WARRANTY**: This software is provided "AS IS" without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or safety. The developer makes NO guarantees that this system will function correctly during an actual emergency.
+
+**Liability Disclaimer**: The developer of this integration assumes no liability for any unauthorized use, misuse, or legal consequences arising from the use of this software. Users assume all risks associated with generating and playing EAS tones.
+
+**Educational Purpose**: This project is offered for educational and emergency preparedness purposes, demonstrating how emergency alert coverage can be extended to additional devices within a private residence.
+
 ### Installation
 
 #### Pre-Requisites
@@ -44,4 +66,3 @@ Please look at the [WeatherAlerts installation & configuration instructions](htt
 This is an Early alpha build, please do NOT rely on this!
 
 ### Tests
-

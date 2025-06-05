@@ -7,5 +7,5 @@
     "zip_release": true,
     "filename": "ha_easgen.zip",
     "hide_default_branch": true,
-    "homeassistant": "2023.3"
+    "homeassistant": "2025.1"
   }

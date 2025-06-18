@@ -12,6 +12,8 @@
 ## Emergency Alert System
 This is a platform integration for [Emergency Alert System](https://www.fcc.gov/emergency-alert-system) for Home Assistant to Generate a the EAS Alerts for Satellites.
 
+Currently only the United States EAS system is in place. Support for other countries is welcome to be submitted via a PR.
+
 ### ⚠️ IMPORTANT LEGAL NOTICE
 
 **This integration generates Emergency Alert System (EAS) tones. The reproduction of EAS tones is strictly regulated by the Federal Communications Commission (FCC).**

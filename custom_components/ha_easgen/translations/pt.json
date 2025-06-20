@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "tts_engine": "Selecione o Fornecedor de TTS (Text-to-Speech).",
+          "sensor": "Selecione o sensor de Alertas Meteorológicos.",
+          "call_sign": "Defina o indicativo de chamada (call sign) para o Protocolo de Cabeçalho EAS.",
+          "voice": "Selecione a Voz do Fornecedor de TTS.",
+          "org": "Selecione a Organização (ORG) EAS.",
+          "language": "Selecione o Idioma do Fornecedor de TTS."
+        },
+        "description": "Forneça os dados de configuração. Consulte a documentação para mais informações.",
+        "title": "Configurar o EASGen"
+      },
+      "reconfigure": {
+        "title": "Reconfigurar o EASGen",
+        "description": "Forneça os dados de configuração. Consulte a documentação para mais informações.",
+        "data": {
+          "tts_engine": "Selecione o Fornecedor de TTS (Text-to-Speech).",
+          "sensor": "Selecione o sensor de Alertas Meteorológicos.",
+          "call_sign": "Defina o indicativo de chamada (call sign) para o Protocolo de Cabeçalho EAS.",
+          "voice": "Selecione a Voz do Fornecedor de TTS.",
+          "org": "Selecione a Organização (ORG) EAS.",
+          "language": "Selecione o Idioma do Fornecedor de TTS."
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Esta Integração já foi configurada."
+    },
+    "abort": {
+      "already_configured": "Esta Integração já foi configurada."
+    }
+  }
+}

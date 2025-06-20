@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.29](https://github.com/Makr91/ha_easgen/compare/v0.1.28...v0.1.29) (2025-06-20)
+
+
+### Bug Fixes
+
+* Updated Readme ([4a0340b](https://github.com/Makr91/ha_easgen/commit/4a0340bf8b430a0d87d43390a20e53d23896e12a))
+
 ## [0.1.28](https://github.com/Makr91/ha_easgen/compare/v0.1.27...v0.1.28) (2025-06-05)
 
 

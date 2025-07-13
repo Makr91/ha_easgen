@@ -20,32 +20,71 @@ class EASGenTTSEngine:
         self._language = language
         self._languages = AVAIL_LANGUAGES
 
-    def get_tts(self, text: str, header_path, footer_path):
-        """Generates TTS WAV data"""
-        result = self.hass.services.call(
-            "chime_tts",
-            "say_url",
-            {
-                "tts_platform": self._tts_engine,
-                "message": text,
-                "cache": "false"
-            },
-            return_response=True,
-            blocking=True
-        )
+    async def get_tts(self, text: str, header_path, footer_path):
+        """Generate TTS audio directly using Home Assistant TTS functions (like chime_tts does internally)"""
+        try:
+            import asyncio
+            import io
+            from homeassistant.components import tts
+            
+            # Step 1: Generate media source ID (same as chime_tts)
+            timeout = 30  # seconds
+            media_source_id = await asyncio.wait_for(
+                asyncio.to_thread(
+                    tts.media_source.generate_media_source_id,
+                    hass=self.hass,
+                    message=text,
+                    engine=self._tts_engine,
+                    language=self._language,
+                    cache=False,
+                    options={}
+                ),
+                timeout=timeout,
+            )
+            
+            if not media_source_id:
+                _LOGGER.error("Error: Unable to generate media_source_id")
+                return None, None
+            
+            # Step 2: Get the audio data (same as chime_tts)
+            audio_data = await tts.async_get_media_source_audio(
+                hass=self.hass, 
+                media_source_id=media_source_id
+            )
+            
+            if audio_data is None or len(audio_data) != 2:
+                _LOGGER.error("Error: Unable to get audio data from media_source_id")
+                return None, None
+            
+            # Step 3: Convert to pydub AudioSegment (same as chime_tts)
+            audio_bytes = audio_data[1]
+            file = io.BytesIO(audio_bytes)
+            tts_audio = pydub.AudioSegment.from_file(file)
+            
+            if tts_audio and len(tts_audio) > 0:
+                _LOGGER.debug("TTS audio generated successfully")
+                return (tts_audio, None)
+            else:
+                _LOGGER.error("Could not extract TTS audio from file")
+                return None, None
+                
+        except asyncio.TimeoutError:
+            _LOGGER.error("TTS audio generation timed out after %ss", timeout)
+            return None, None
+        except Exception as e:
+            _LOGGER.error(f"TTS generation failed: {e}")
+            return None, None
         
-        media_source = result['media_content_id'].split("://media_source")[1].split("local")[1]
-        tts_message_path = "/media" + media_source
-        tts_message = pydub.AudioSegment.from_mp3(tts_message_path)
-
-        return (tts_message, tts_message_path)
-        
-    def get_notifications(self):
-        from .eventcodes import SAME, FIPS
+    async def get_notifications(self):
+        from .eventcodes import get_same_data, get_fips_data
         valid_severities = {'Unknown', 'Minor', 'Moderate', 'Severe', 'Extreme'}
         alert_number = 0
         attributes = self.hass.states.get(self._sensor).attributes
         results = []
+
+        # Load data asynchronously
+        SAME = await get_same_data()
+        FIPS = await get_fips_data()
 
         # Check if the "integration" attribute contains "weatheralerts" for the user selected sensor
         if "integration" in attributes and "weatheralerts" in attributes["integration"].lower():
@@ -145,20 +184,26 @@ class EASGenTTSEngine:
             quarters = divmod(purge_diff, MINUTE_IN_SECONDS / 15)[0] * (MINUTE_IN_SECONDS / 15)
             return f"00{int(quarters):02d}"
 
-    def get_header_audio(self, MinHeader, FullHeader):
+    async def get_header_audio(self, MinHeader, FullHeader):
+        import asyncio
         AlertHeader = EASGen.genEAS(header=FullHeader, attentionTone=True, endOfMessage=False)
         header_path = "/media/tts/" + MinHeader + "-Header.wav"
         _LOGGER.debug("Generating EAS Header Audio")
-        EASGen.export_wav(header_path, AlertHeader)
-        header = pydub.AudioSegment.from_wav(header_path)
+        
+        # Run blocking operations in thread pool to avoid blocking the event loop
+        await asyncio.to_thread(EASGen.export_wav, header_path, AlertHeader)
+        header = await asyncio.to_thread(pydub.AudioSegment.from_wav, header_path)
         return (header, header_path)
         
-    def get_footer_audio(self, MinHeader):
+    async def get_footer_audio(self, MinHeader):
+        import asyncio
         AlertEndofMessage = EASGen.genEAS(header="", attentionTone=False, endOfMessage=True)
         footer_path = "/media/tts/" + MinHeader + "-EndofMessage.wav"
         _LOGGER.debug("Generating EAS Footer Audio")
-        EASGen.export_wav(footer_path, AlertEndofMessage)
-        footer = pydub.AudioSegment.from_wav(footer_path)
+        
+        # Run blocking operations in thread pool to avoid blocking the event loop
+        await asyncio.to_thread(EASGen.export_wav, footer_path, AlertEndofMessage)
+        footer = await asyncio.to_thread(pydub.AudioSegment.from_wav, footer_path)
         return (footer, footer_path)
 
     @staticmethod

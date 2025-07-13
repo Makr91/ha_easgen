@@ -77,10 +77,10 @@ class EASGenTTSEntity(TextToSpeechEntity):
         """Return the name of the entity."""
         return self._name
 
-    def get_tts_audio(self, message, language, options=None):
+    async def async_get_tts_audio(self, message, language, options=None):
         """Return EAS Header Audio, TTS, and End of Message Audio."""
         try:
-            notification_data = self._engine.get_notifications()
+            notification_data = await self._engine.get_notifications()
             
             # Initialize an empty AudioSegment to combine all the alerts
             combined_speech = pydub.AudioSegment.silent(duration=0)
@@ -91,14 +91,20 @@ class EASGenTTSEntity(TextToSpeechEntity):
                 
                 _LOGGER.debug("Generating WAV Files")
                 
-                # Generate Header and Footer WAV files
-                header_wav = self._engine.get_header_audio(MinHeader, FullHeader)
+                # Generate Header and Footer WAV files (now async)
+                header_wav = await self._engine.get_header_audio(MinHeader, FullHeader)
                 header, header_path = header_wav
-                footer_wav = self._engine.get_footer_audio(MinHeader)
+                footer_wav = await self._engine.get_footer_audio(MinHeader)
                 footer, footer_path = footer_wav
                 
-                # Generate TTS for the current alert
-                generated_speech = self._engine.get_tts(title, header_path, footer_path)
+                # Generate TTS for the current alert (now async)
+                generated_speech = await self._engine.get_tts(title, header_path, footer_path)
+                
+                # Check if TTS generation was successful
+                if generated_speech is None or generated_speech == (None, None):
+                    _LOGGER.error("TTS generation failed for alert: %s", title)
+                    continue
+                
                 tts_message, tts_message_path = generated_speech
 
                 # Combine the header, TTS message, and footer for the current alert
@@ -116,4 +122,3 @@ class EASGenTTSEntity(TextToSpeechEntity):
             _LOGGER.error("Unknown Error: %s", e)
     
         return None, None
-    

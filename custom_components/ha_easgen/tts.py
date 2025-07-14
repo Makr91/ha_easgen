@@ -55,6 +55,11 @@ async def async_setup_entry(
     
     # Register the TTS entity with coordinator access
     tts_entity = EASGenTTSEntity(hass, config_entry, engine, coordinator)
+    
+    # Store engine reference in coordinator for easier access
+    if coordinator:
+        coordinator.tts_engine = engine
+    
     async_add_entities([tts_entity])
     _LOGGER.info("EAS TTS entity created successfully: %s", tts_entity.entity_id)
 
@@ -107,7 +112,21 @@ class EASGenTTSEntity(TextToSpeechEntity):
     async def async_get_tts_audio(self, message, language, options=None):
         """Return EAS Header Audio, TTS, and End of Message Audio."""
         try:
-            notification_data = await self._engine.get_notifications()
+            # Parse the specific alert data from the message
+            import json
+            try:
+                alert_data = json.loads(message)
+                _LOGGER.debug("Processing specific alert: %s", alert_data.get("event", "Unknown"))
+            except json.JSONDecodeError:
+                _LOGGER.error("Invalid alert data received: %s", message)
+                return None, None
+            
+            # Process the specific alert instead of all alerts
+            notification_data = await self._engine.get_single_notification(alert_data)
+            
+            if not notification_data:
+                _LOGGER.error("No notification data generated for alert")
+                return None, None
             
             # Initialize an empty AudioSegment to combine all the alerts
             combined_speech = pydub.AudioSegment.silent(duration=0)

@@ -1,57 +1,62 @@
-"""Module to pull and parse SAME and FIPS data"""
-import requests
+"""Module to load SAME and FIPS data from local cache files"""
+from __future__ import annotations
+
 import os
 import json
-import aiofiles
-
 import logging
+from typing import Dict, List, Any, Optional
 
 _LOGGER = logging.getLogger(__name__)
 
-# GitHub repository URLs for SAME and FIPS data
-SAME_url = "https://raw.githubusercontent.com/Makr91/ha_easgen/refs/heads/main/custom_components/ha_easgen/cache/SAME_cache.json"
-FIPS_url = "https://raw.githubusercontent.com/Makr91/ha_easgen/refs/heads/main/custom_components/ha_easgen/cache/FIPS_cache.json"
-
 # Cache file paths
-CACHE_DIR = "custom_components/ha_easgen/cache"
+CACHE_DIR = os.path.join(os.path.dirname(__file__), "cache")
 SAME_cache_file = os.path.join(CACHE_DIR, "SAME_cache.json")
 FIPS_cache_file = os.path.join(CACHE_DIR, "FIPS_cache.json")
 
-async def load_data_from_cache(cache_file):
-    if os.path.exists(cache_file):
-        async with aiofiles.open(cache_file, "r") as file:
-            content = await file.read()
-            return json.loads(content)
-    return None
+# Cache data in memory to avoid repeated file reads
+_SAME_CACHE: Optional[List[Dict[str, Any]]] = None
+_FIPS_CACHE: Optional[List[Dict[str, Any]]] = None
 
-async def save_data_to_cache(data, cache_file):
-    async with aiofiles.open(cache_file, "w") as file:
-        await file.write(json.dumps(data))
 
-# Initialize as None - will be loaded lazily when first accessed
-SAME = None
-FIPS = None
+async def get_same_data() -> List[Dict[str, Any]]:
+    """Load SAME data from local cache file."""
+    global _SAME_CACHE
+    
+    if _SAME_CACHE is None:
+        try:
+            with open(SAME_cache_file, 'r', encoding='utf-8') as file:
+                _SAME_CACHE = json.load(file)
+            _LOGGER.debug("Loaded SAME data from local cache: %d entries", len(_SAME_CACHE))
+        except FileNotFoundError:
+            _LOGGER.error("SAME cache file not found: %s", SAME_cache_file)
+            _SAME_CACHE = []
+        except json.JSONDecodeError as e:
+            _LOGGER.error("Error parsing SAME cache file: %s", e)
+            _SAME_CACHE = []
+        except Exception as e:
+            _LOGGER.error("Unexpected error loading SAME cache: %s", e)
+            _SAME_CACHE = []
+    
+    return _SAME_CACHE
 
-async def get_same_data():
-    global SAME
-    if SAME is None:
-        SAME = await load_data_from_cache(SAME_cache_file)
-        if SAME is None:
-            _LOGGER.debug("Loading SAME data from GitHub repository")
-            SAME_response = requests.get(SAME_url)
-            SAME_response.raise_for_status()  # Raise an exception for bad status codes
-            SAME = SAME_response.json()
-            await save_data_to_cache(SAME, SAME_cache_file)
-    return SAME
 
-async def get_fips_data():
-    global FIPS
-    if FIPS is None:
-        FIPS = await load_data_from_cache(FIPS_cache_file)
-        if FIPS is None:
-            _LOGGER.debug("Loading FIPS data from GitHub repository")
-            FIPS_response = requests.get(FIPS_url)
-            FIPS_response.raise_for_status()  # Raise an exception for bad status codes
-            FIPS = FIPS_response.json()
-            await save_data_to_cache(FIPS, FIPS_cache_file)
-    return FIPS
+async def get_fips_data() -> List[Dict[str, Any]]:
+    """Load FIPS data from local cache file."""
+    global _FIPS_CACHE
+    
+    if _FIPS_CACHE is None:
+        try:
+            with open(FIPS_cache_file, 'r', encoding='utf-8') as file:
+                _FIPS_CACHE = json.load(file)
+            _LOGGER.debug("Loaded FIPS data from local cache: %d entries", len(_FIPS_CACHE))
+        except FileNotFoundError:
+            _LOGGER.error("FIPS cache file not found: %s", FIPS_cache_file)
+            _FIPS_CACHE = []
+        except json.JSONDecodeError as e:
+            _LOGGER.error("Error parsing FIPS cache file: %s", e)
+            _FIPS_CACHE = []
+        except Exception as e:
+            _LOGGER.error("Unexpected error loading FIPS cache: %s", e)
+            _FIPS_CACHE = []
+    
+    return _FIPS_CACHE

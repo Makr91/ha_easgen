@@ -40,8 +40,14 @@ jobs:
 
       - name: Patch manifest and zip
         run: |
-          yq -i -o json '.version="${{ steps.previoustag.outputs.tag }}"' \
+          # Get the version without 'v' prefix
+          VERSION="${{ steps.previoustag.outputs.tag }}"
+          VERSION=${VERSION#v}
+          echo "Updating manifest.json with version: $VERSION"
+          yq -i -o json '.version="'$VERSION'"' \
             "${{ github.workspace }}/custom_components/ha_easgen/manifest.json"
+          echo "Manifest.json updated:"
+          cat "${{ github.workspace }}/custom_components/ha_easgen/manifest.json"
         if: ${{ steps.release.outputs.release_created }}
 
       - name: "Archiving the integration directory"

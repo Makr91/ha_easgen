@@ -15,12 +15,109 @@ from homeassistant.helpers.storage import Store
 from .const import (
     STATE, ZONE, COUNTY, DOMAIN, MAX_ALERTS, ALERT_TRACK_FILE, 
     ALERT_SENSOR_PREFIX, ALERTS_SUMMARY_SENSOR, ALERT_ICONS,
-    SEVERITY_LEVELS, ANNOUNCEMENT_DELAY, TTS_ENGINE, CALL_SIGN, MEDIA_PLAYERS,
+    SEVERITY_LEVELS, TTS_ENGINE, CALL_SIGN, MEDIA_PLAYERS,
     DISABLE_TTS, INCLUDE_DESCRIPTION, TTS_WARNINGS, TTS_WATCHES, TTS_STATEMENTS
 )
 from .weather_alerts import EASGenWeatherAlertsSensor
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class EASAnnouncementQueue:
+    """Queue manager for EAS announcements to prevent overlapping."""
+    
+    def __init__(self, hass: HomeAssistant):
+        self.hass = hass
+        self.queue = asyncio.Queue()
+        self.processing = False
+        
+    async def add_announcement(self, alert, audio_url, media_players, audio_duration):
+        """Add an announcement to the queue."""
+        await self.queue.put({
+            'alert': alert,
+            'audio_url': audio_url,
+            'media_players': media_players,
+            'audio_duration': audio_duration
+        })
+        
+        # Start processing if not already processing
+        if not self.processing:
+            self.hass.async_create_task(self._process_queue())
+    
+    async def _process_queue(self):
+        """Process announcements sequentially."""
+        self.processing = True
+        
+        try:
+            while not self.queue.empty():
+                announcement = await self.queue.get()
+                await self._play_announcement(announcement)
+                self.queue.task_done()
+        finally:
+            self.processing = False
+    
+    async def _play_announcement(self, announcement):
+        """Play a single announcement and wait for completion."""
+        alert = announcement['alert']
+        audio_url = announcement['audio_url']
+        media_players = announcement['media_players']
+        audio_duration = announcement['audio_duration']
+        
+        event_name = alert.get("event", "Unknown")
+        
+        try:
+            _LOGGER.debug("Playing announcement for %s on media players: %s", event_name, media_players)
+            
+            # Play the announcement
+            await self.hass.services.async_call(
+                "media_player",
+                "play_media",
+                {
+                    "entity_id": media_players,
+                    "media_content_type": "audio",
+                    "media_content_id": audio_url,
+                    "announce": True,  # This handles the interruption/resume automatically
+                },
+                blocking=False,  # Don't block the service call
+            )
+            
+            # Wait for the audio duration (we know exactly how long it should take)
+            await asyncio.sleep(audio_duration)
+            
+            # Wait for media players to finish playing
+            await self._wait_for_players_idle(media_players)
+            
+            _LOGGER.info("EAS announcement completed for %s on media players: %s", event_name, media_players)
+            
+        except Exception as e:
+            _LOGGER.error("Failed to play EAS announcement for %s: %s", event_name, e)
+    
+    async def _wait_for_players_idle(self, media_players):
+        """Wait for media players to return to idle state."""
+        max_wait = 30  # Maximum wait time in seconds
+        check_interval = 0.5  # Check every 0.5 seconds
+        
+        for _ in range(int(max_wait / check_interval)):
+            all_idle = True
+            
+            for player_id in media_players:
+                try:
+                    state = self.hass.states.get(player_id)
+                    if state and state.state == "playing":
+                        all_idle = False
+                        break
+                except Exception:
+                    # If we can't get the state, assume it's idle
+                    pass
+            
+            if all_idle:
+                return
+                
+            await asyncio.sleep(check_interval)
+        
+        # Timeout reached
+        _LOGGER.debug("Timeout waiting for media players to become idle")
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -79,9 +176,13 @@ class EASAlertCoordinator:
         self.announced_alerts = set()
         self.alert_sensors = {}
         self.summary_sensor = None
+        self.tts_engine = None  # Will be set by TTS entity when it's created
         
         # Alert tracking storage
         self.store = Store(hass, 1, f"{DOMAIN}_{config_entry.entry_id}_alert_tracking")
+        
+        # Initialize announcement queue
+        self.announcement_queue = EASAnnouncementQueue(hass)
         
     async def async_start(self):
         """Start the alert coordinator."""
@@ -166,7 +267,7 @@ class EASAlertCoordinator:
         """Trigger EAS announcements and UI notifications for new alerts."""
         _LOGGER.info("Triggering EAS for new alerts: %s", alert_ids)
         
-        for i, alert_id in enumerate(alert_ids):
+        for alert_id in alert_ids:
             alert = next((a for a in self.current_alerts if a.get("id") == alert_id), None)
             if not alert:
                 continue
@@ -174,10 +275,8 @@ class EASAlertCoordinator:
             # Create UI notification
             await self._create_ui_notification(alert)
             
-            # Trigger EAS TTS (with delay between multiple alerts)
-            if i > 0:
-                await asyncio.sleep(ANNOUNCEMENT_DELAY)
-            await self._trigger_eas_tts(alert)
+            # Trigger EAS announcement
+            await self._trigger_eas_announcement(alert)
             
     async def _create_ui_notification(self, alert):
         """Create a persistent notification for the alert."""
@@ -257,8 +356,8 @@ class EASAlertCoordinator:
         # Default to warning for unknown types
         return "warning"
         
-    async def _trigger_eas_tts(self, alert):
-        """Trigger EAS TTS announcement."""
+    async def _trigger_eas_announcement(self, alert):
+        """Trigger EAS announcement using queue system for proper sequencing."""
         # Check if TTS is disabled
         if self.config_entry.data.get(DISABLE_TTS, False):
             _LOGGER.info("TTS is disabled, skipping EAS announcement")
@@ -281,7 +380,6 @@ class EASAlertCoordinator:
             _LOGGER.info("TTS is disabled for event type '%s' (event: %s), skipping EAS announcement", event_type, event_name)
             return
             
-        tts_entity_id = f"tts.eas_gen_tts_{self.config_entry.data[CALL_SIGN].lower()}"
         media_players = self.config_entry.data.get(MEDIA_PLAYERS, [])
         
         if not media_players:
@@ -289,24 +387,34 @@ class EASAlertCoordinator:
             return
         
         try:
-            # Call the TTS service to generate and play EAS announcement
-            await self.hass.services.async_call(
-                "tts",
-                "speak",
-                {
-                    "entity_id": tts_entity_id,
-                    "message": "Emergency Alert System Activation",
-                    "media_player_entity_id": media_players,
-                    "language": "en",
-                    "cache": False,
-                },
-                blocking=False,  # Don't wait for completion
-            )
-            _LOGGER.info("EAS TTS triggered successfully for %s (%s) on entity: %s with media players: %s", 
-                        event_name, event_type, tts_entity_id, media_players)
-            
+            # Use the TTS engine directly from the coordinator
+            if self.tts_engine:
+                # Generate the audio URL and get duration using the TTS engine
+                audio_url = await self.tts_engine.get_audio_url(alert)
+                
+                if audio_url:
+                    # Get the audio duration from the TTS engine
+                    audio_duration = await self.tts_engine.get_audio_duration(alert)
+                    
+                    _LOGGER.debug("Adding EAS announcement to queue for %s (duration: %ss)", event_name, audio_duration)
+                    
+                    # Add to queue for sequential processing
+                    await self.announcement_queue.add_announcement(
+                        alert=alert,
+                        audio_url=audio_url,
+                        media_players=media_players,
+                        audio_duration=audio_duration
+                    )
+                    
+                    _LOGGER.info("EAS announcement queued for %s (%s) on media players: %s", 
+                                event_name, event_type, media_players)
+                else:
+                    _LOGGER.error("Failed to generate audio URL for alert: %s", event_name)
+            else:
+                _LOGGER.error("TTS engine not available for alert: %s", event_name)
+                
         except Exception as e:
-            _LOGGER.error("Failed to trigger EAS TTS on %s with media players %s: %s", tts_entity_id, media_players, e)
+            _LOGGER.error("Failed to queue EAS announcement for %s: %s", event_name, e)
         
     def register_summary_sensor(self, sensor):
         """Register the summary sensor."""

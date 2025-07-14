@@ -1,35 +1,52 @@
 """Constants for the Emergency Alert System Generator integration."""
+
+# Integration Information
 DEFAULT_NAME = "Emergency Alert System"
 MANUFACTURER = "@Makr91"
-
 DOMAIN = "ha_easgen"
 
+# Configuration Keys
 STATE = "state"
 ZONE = "zone"
 COUNTY = "county"
 CALL_SIGN = "call_sign"
 ORG = "org"
-ORGS = [
-    "EAS", # EAS Participant 
-    "WXR", # National Weather Service 
-    "PEP", # Primary Entry Point System 
-    "CIV"  # Civil authorities 
-]
 TTS_ENGINE = "tts_engine"
-UNIQUE_ID = 'unique_id'
-LANGUAGE = 'language'
-VOICE = 'voice'
-MEDIA_PLAYERS = 'media_players'
-DISABLE_TTS = 'disable_tts'
-INCLUDE_DESCRIPTION = 'include_description'
-TTS_WARNINGS = 'tts_warnings'
-TTS_WATCHES = 'tts_watches'
-TTS_STATEMENTS = 'tts_statements'
+UNIQUE_ID = "unique_id"
+LANGUAGE = "language"
+VOICE = "voice"
+MEDIA_PLAYERS = "media_players"
 
+# TTS Configuration
+DISABLE_TTS = "disable_tts"
+INCLUDE_DESCRIPTION = "include_description"
+TTS_WARNINGS = "tts_warnings"
+TTS_WATCHES = "tts_watches"
+TTS_STATEMENTS = "tts_statements"
+
+# EAS Organizations
+ORGS = [
+    "EAS",  # EAS Participant
+    "WXR",  # National Weather Service
+    "PEP",  # Primary Entry Point System
+    "CIV",  # Civil authorities
+]
+
+# Weather API Configuration
 WEATHER_API_URL = "https://api.weather.gov/alerts/active?zone={}"
 WEATHER_ID_CHECK_URL = "https://alerts.weather.gov/cap/wwaatmget.php?x={}&y=0"
 ID_CHECK_ERRORS = ["? invalid county", "? invalid zone"]
-AVAIL_LANGUAGES = ["af", "ar", "hy", "az", "be", "bs", "bg", "ca", "zh", "hr", "cs", "da", "nl", "en", "en-us", "et", "fi", "fr", "gl", "de", "el", "he", "hi", "hu", "is", "id", "it", "ja", "kn", "kk", "ko", "lv", "lt", "mk", "ms", "mr", "mi", "ne", "no", "fa", "pl", "pt", "ro", "ru", "sr", "sk", "sl", "es", "sw", "sv", "tl", "ta", "th", "tr", "uk", "ur", "vi", "cy"]
+
+# TTS Language Support
+AVAIL_LANGUAGES = [
+    "af", "ar", "hy", "az", "be", "bs", "bg", "ca", "zh", "hr", "cs", "da", "nl", 
+    "en", "en-us", "et", "fi", "fr", "gl", "de", "el", "he", "hi", "hu", "is", 
+    "id", "it", "ja", "kn", "kk", "ko", "lv", "lt", "mk", "ms", "mr", "mi", "ne", 
+    "no", "fa", "pl", "pt", "ro", "ru", "sr", "sk", "sl", "es", "sw", "sv", "tl", 
+    "ta", "th", "tr", "uk", "ur", "vi", "cy"
+]
+
+# EAS Protocol Constants
 MAX_PURGE_DIFFERENCE = 5940
 HOUR_IN_MINUTES = 60
 MINUTE_IN_SECONDS = 60
@@ -37,7 +54,6 @@ MINUTE_IN_SECONDS = 60
 # Alert Management Constants
 MAX_ALERTS = 5
 SEVERITY_LEVELS = ["Minor", "Moderate", "Severe", "Extreme"]
-ANNOUNCEMENT_DELAY = 5  # seconds between multiple alerts
 ALERT_TRACK_FILE = "alert_tracking.json"
 
 # Alert Entity Names

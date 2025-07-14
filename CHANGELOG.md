@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.30](https://github.com/Makr91/ha_easgen/compare/v0.1.29...v0.1.30) (2025-07-14)
+
+
+### Bug Fixes
+
+* remove chime_tts as dependency ([acb68b2](https://github.com/Makr91/ha_easgen/commit/acb68b2844ce3fe8b65d85a965be2bba8f16ee2e))
+* remove weatheralerts integration dependency ([3281b11](https://github.com/Makr91/ha_easgen/commit/3281b1143fd61f3fb2065eadd71fa210b8558819))
+* updating same cache ([5bbf33a](https://github.com/Makr91/ha_easgen/commit/5bbf33ab000029ff2dd4e3f2cd2db1d2140ac887))
+
 ## [0.1.29](https://github.com/Makr91/ha_easgen/compare/v0.1.28...v0.1.29) (2025-06-20)
 
 

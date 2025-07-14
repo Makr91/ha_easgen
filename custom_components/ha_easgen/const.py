@@ -22,6 +22,9 @@ VOICE = 'voice'
 MEDIA_PLAYERS = 'media_players'
 DISABLE_TTS = 'disable_tts'
 INCLUDE_DESCRIPTION = 'include_description'
+TTS_WARNINGS = 'tts_warnings'
+TTS_WATCHES = 'tts_watches'
+TTS_STATEMENTS = 'tts_statements'
 
 WEATHER_API_URL = "https://api.weather.gov/alerts/active?zone={}"
 WEATHER_ID_CHECK_URL = "https://alerts.weather.gov/cap/wwaatmget.php?x={}&y=0"

@@ -16,7 +16,7 @@ from .const import (
     STATE, ZONE, COUNTY, DOMAIN, MAX_ALERTS, ALERT_TRACK_FILE, 
     ALERT_SENSOR_PREFIX, ALERTS_SUMMARY_SENSOR, ALERT_ICONS,
     SEVERITY_LEVELS, ANNOUNCEMENT_DELAY, TTS_ENGINE, CALL_SIGN, MEDIA_PLAYERS,
-    DISABLE_TTS, INCLUDE_DESCRIPTION
+    DISABLE_TTS, INCLUDE_DESCRIPTION, TTS_WARNINGS, TTS_WATCHES, TTS_STATEMENTS
 )
 from .weather_alerts import EASGenWeatherAlertsSensor
 
@@ -177,7 +177,7 @@ class EASAlertCoordinator:
             # Trigger EAS TTS (with delay between multiple alerts)
             if i > 0:
                 await asyncio.sleep(ANNOUNCEMENT_DELAY)
-            await self._trigger_eas_tts()
+            await self._trigger_eas_tts(alert)
             
     async def _create_ui_notification(self, alert):
         """Create a persistent notification for the alert."""
@@ -210,11 +210,75 @@ class EASAlertCoordinator:
             }
         )
         
-    async def _trigger_eas_tts(self):
+    async def _get_event_type(self, alert):
+        """Determine event type based on SAME cache lookup."""
+        # First try to get the NWS event code from the alert data
+        event_code = None
+        if "eventCode" in alert and "NationalWeatherService" in alert["eventCode"]:
+            event_codes = alert["eventCode"]["NationalWeatherService"]
+            if isinstance(event_codes, list) and len(event_codes) > 0:
+                event_code = event_codes[0]
+        
+        # If we have an event code, look it up in the SAME cache
+        if event_code:
+            try:
+                # Load SAME cache
+                same_cache_path = os.path.join(os.path.dirname(__file__), "cache", "SAME_cache.json")
+                with open(same_cache_path, 'r') as f:
+                    same_cache = json.load(f)
+                
+                # Find the event in the cache
+                for item in same_cache:
+                    if item.get("Event Code") == event_code:
+                        event_level = item.get("Event Level", "")
+                        # Map event level to our categories
+                        if event_level == "WRN":
+                            return "warning"
+                        elif event_level == "WCH":
+                            return "watch"
+                        elif event_level == "ADV":
+                            return "statement"
+                        elif event_level == "TEST":
+                            return "statement"  # Skip test messages by default
+                        break
+            except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+                _LOGGER.warning("Error loading SAME cache: %s", e)
+        
+        # Fallback: try to determine by event name
+        event = alert.get("event", "")
+        event_lower = event.lower()
+        if "warning" in event_lower:
+            return "warning"
+        elif "watch" in event_lower:
+            return "watch"
+        elif "statement" in event_lower or "advisory" in event_lower:
+            return "statement"
+        
+        # Default to warning for unknown types
+        return "warning"
+        
+    async def _trigger_eas_tts(self, alert):
         """Trigger EAS TTS announcement."""
         # Check if TTS is disabled
         if self.config_entry.data.get(DISABLE_TTS, False):
             _LOGGER.info("TTS is disabled, skipping EAS announcement")
+            return
+            
+        # Determine event type and check if TTS is enabled for this type
+        event_type = await self._get_event_type(alert)
+        event_name = alert.get("event", "Unknown")
+        
+        # Check if TTS is enabled for this event type
+        tts_enabled = False
+        if event_type == "warning" and self.config_entry.data.get(TTS_WARNINGS, True):
+            tts_enabled = True
+        elif event_type == "watch" and self.config_entry.data.get(TTS_WATCHES, True):
+            tts_enabled = True
+        elif event_type == "statement" and self.config_entry.data.get(TTS_STATEMENTS, False):
+            tts_enabled = True
+            
+        if not tts_enabled:
+            _LOGGER.info("TTS is disabled for event type '%s' (event: %s), skipping EAS announcement", event_type, event_name)
             return
             
         tts_entity_id = f"tts.eas_gen_tts_{self.config_entry.data[CALL_SIGN].lower()}"
@@ -238,7 +302,8 @@ class EASAlertCoordinator:
                 },
                 blocking=False,  # Don't wait for completion
             )
-            _LOGGER.info("EAS TTS triggered successfully on entity: %s with media players: %s", tts_entity_id, media_players)
+            _LOGGER.info("EAS TTS triggered successfully for %s (%s) on entity: %s with media players: %s", 
+                        event_name, event_type, tts_entity_id, media_players)
             
         except Exception as e:
             _LOGGER.error("Failed to trigger EAS TTS on %s with media players %s: %s", tts_entity_id, media_players, e)

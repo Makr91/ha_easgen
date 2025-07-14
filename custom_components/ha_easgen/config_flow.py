@@ -12,7 +12,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_registry import async_get
 
-from .const import DEFAULT_NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, ORGS, STATE, ZONE, COUNTY, TTS_ENGINE, VOICE, LANGUAGE, AVAIL_LANGUAGES, MEDIA_PLAYERS, DISABLE_TTS, INCLUDE_DESCRIPTION
+from .const import DEFAULT_NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, ORGS, STATE, ZONE, COUNTY, TTS_ENGINE, VOICE, LANGUAGE, AVAIL_LANGUAGES, MEDIA_PLAYERS, DISABLE_TTS, INCLUDE_DESCRIPTION, TTS_WARNINGS, TTS_WATCHES, TTS_STATEMENTS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -115,7 +115,10 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
                     }
                 }),
                 vol.Optional(DISABLE_TTS, default=False): bool,
-                vol.Optional(INCLUDE_DESCRIPTION, default=False): bool
+                vol.Optional(INCLUDE_DESCRIPTION, default=False): bool,
+                vol.Optional(TTS_WARNINGS, default=True): bool,
+                vol.Optional(TTS_WATCHES, default=True): bool,
+                vol.Optional(TTS_STATEMENTS, default=False): bool
             })
             return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
         
@@ -182,6 +185,9 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
                     }
                 }),
                 vol.Optional(DISABLE_TTS, default=user_input.get(DISABLE_TTS, False)): bool,
-                vol.Optional(INCLUDE_DESCRIPTION, default=user_input.get(INCLUDE_DESCRIPTION, False)): bool
+                vol.Optional(INCLUDE_DESCRIPTION, default=user_input.get(INCLUDE_DESCRIPTION, False)): bool,
+                vol.Optional(TTS_WARNINGS, default=user_input.get(TTS_WARNINGS, True)): bool,
+                vol.Optional(TTS_WATCHES, default=user_input.get(TTS_WATCHES, True)): bool,
+                vol.Optional(TTS_STATEMENTS, default=user_input.get(TTS_STATEMENTS, False)): bool
             })
             return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)

@@ -13,10 +13,9 @@
 This is a platform integration for [Emergency Alert System](https://www.fcc.gov/emergency-alert-system) for Home Assistant that generates EAS alerts with authentic tones and announcements.
 
 The integration includes:
-- **Built-in Weather Alert Monitoring**: Direct integration with weather.gov API (no external dependencies)
+- **Built-in Weather Alert Monitoring**: Direct integration with weather.gov API
 - **EAS Tone Generation**: Authentic EAS header/footer tones using EASGen library
 - **TTS Integration**: Works with any Home Assistant TTS engine
-- **Self-Contained**: No external integrations required
 
 Currently only the United States EAS system is in place. Support for other countries is welcome to be submitted via a PR.
 
@@ -44,10 +43,6 @@ Currently only the United States EAS system is in place. Support for other count
 
 ### Installation
 
-#### Pre-Requisites
-No external integrations required! EAS Generator now includes built-in weather alert monitoring via the weather.gov API.
-
-
 #### HACS
 1. Install [HACS](https://hacs.xyz)
 1. Go to any of the sections (integrations, frontend, automation).
@@ -62,6 +57,8 @@ No external integrations required! EAS Generator now includes built-in weather a
 #### Manual
 1. Clone this repository
 2. Copy `custom_components/ha_easgen` to your Home Assistant insance on `<config dir>/custom_components/`
+3. Restart Home Assistant Core
+4. Add the integrations via the Integrations page
 
 ### Setup
 
@@ -89,23 +86,5 @@ Once configured, the integration will:
 2. Generate EAS announcements when alerts are active
 3. Create TTS entities that can be used in automations
 
-#### Example Automation
-```yaml
-alias: "EAS Weather Alert"
-trigger:
-  - platform: state
-    entity_id: tts.eas_gen_tts_kf5ntr
-    attribute: alerts
-action:
-  - service: tts.speak
-    target:
-      entity_id: tts.eas_gen_tts_kf5ntr
-    data:
-      message: "Emergency Alert"
-      media_player_entity_id: media_player.your_speaker
-```
-
 ### Notes
 This is an Early alpha build, please do NOT rely on this!
-
-### Tests

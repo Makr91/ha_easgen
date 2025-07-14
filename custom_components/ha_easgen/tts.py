@@ -2,15 +2,17 @@
 Setting up TTS entity.
 """
 import logging
+import asyncio
 import pydub
 from homeassistant.components.tts import TextToSpeechEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import generate_entity_id
-from .const import DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, SENSOR, TTS_ENGINE, VOICE, LANGUAGE, MANUFACTURER
+from .const import DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, STATE, ZONE, COUNTY, TTS_ENGINE, VOICE, LANGUAGE, MANUFACTURER
 from .version import __version__ as VERSION
 from .eas_gen_tts_engine import EASGenTTSEngine
+from .weather_alerts import EASGenWeatherAlertsSensor
 from urllib.parse import quote
 
 from homeassistant.exceptions import MaxLengthExceeded
@@ -24,28 +26,53 @@ async def async_setup_entry(
 ) -> None:
     """Set up EAS Generator Text-to-speech platform via config entry."""
 
+    # Wait for coordinator to be available (retry mechanism)
+    coordinator = None
+    max_retries = 20
+    for attempt in range(max_retries):
+        if DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]:
+            coordinator = hass.data[DOMAIN][config_entry.entry_id]
+            _LOGGER.info("Found alert coordinator on attempt %d", attempt + 1)
+            break
+        _LOGGER.debug("Waiting for alert coordinator (attempt %d/%d)", attempt + 1, max_retries)
+        await asyncio.sleep(0.2)  # Wait 200ms between attempts
+    
+    if coordinator is None:
+        _LOGGER.error("Alert coordinator not found after %d attempts - sensor platform may have failed", max_retries)
+        return
+
+    _LOGGER.info("Creating EAS TTS engine with coordinator")
     engine = EASGenTTSEngine(
         hass,
-        config_entry.data[SENSOR],
+        coordinator.weather_sensor,
         config_entry.data[TTS_ENGINE],
         config_entry.data[ORG],
         config_entry.data[CALL_SIGN],
         config_entry.data[VOICE],
-        config_entry.data[LANGUAGE]
+        config_entry.data[LANGUAGE],
+        config_entry
     )
-    async_add_entities([EASGenTTSEntity(hass, config_entry, engine)])
+    
+    # Register the TTS entity with coordinator access
+    tts_entity = EASGenTTSEntity(hass, config_entry, engine, coordinator)
+    async_add_entities([tts_entity])
+    _LOGGER.info("EAS TTS entity created successfully: %s", tts_entity.entity_id)
+
 
 class EASGenTTSEntity(TextToSpeechEntity):
     """The EAS Generator TTS entity."""
     _attr_has_entity_name = True
     _attr_should_poll = False
 
-    def __init__(self, hass, config, engine):
+    def __init__(self, hass, config, engine, coordinator=None):
         """Initialize TTS entity."""
         self.hass = hass
         self._engine = engine
         self._config = config
-        self._name = config.data[SENSOR].lstrip("sensor.")
+        self._coordinator = coordinator
+        self._name = f"EAS Generator {config.data[STATE]}Z{config.data[ZONE]}"
+        if config.data.get(COUNTY):
+            self._name += f" {config.data[STATE]}C{config.data[COUNTY]}"
 
         self._attr_unique_id = config.data.get(UNIQUE_ID)
         if self._attr_unique_id is None:

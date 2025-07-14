@@ -10,15 +10,16 @@ from dateutil import parser
 _LOGGER = logging.getLogger(__name__)
 
 class EASGenTTSEngine:
-    def __init__(self, hass, sensor: str, tts_engine: str, org: str, call_sign: str, voice: str, language: str):
+    def __init__(self, hass, weather_sensor, tts_engine: str, org: str, call_sign: str, voice: str, language: str, config_entry=None):
         self.hass = hass
-        self._sensor = sensor
+        self._weather_sensor = weather_sensor
         self._tts_engine = tts_engine
         self._org = org
         self._call_sign = call_sign
         self._voice = voice
         self._language = language
         self._languages = AVAIL_LANGUAGES
+        self._config_entry = config_entry
 
     async def get_tts(self, text: str, header_path, footer_path):
         """Generate TTS audio directly using Home Assistant TTS functions (like chime_tts does internally)"""
@@ -79,15 +80,18 @@ class EASGenTTSEngine:
         from .eventcodes import get_same_data, get_fips_data
         valid_severities = {'Unknown', 'Minor', 'Moderate', 'Severe', 'Extreme'}
         alert_number = 0
-        attributes = self.hass.states.get(self._sensor).attributes
         results = []
 
         # Load data asynchronously
         SAME = await get_same_data()
         FIPS = await get_fips_data()
 
-        # Check if the "integration" attribute contains "weatheralerts" for the user selected sensor
-        if "integration" in attributes and "weatheralerts" in attributes["integration"].lower():
+        # Update the weather sensor to get latest alerts
+        await self._weather_sensor.async_update()
+        
+        # Get alerts from the internal weather sensor
+        attributes = self._weather_sensor.extra_state_attributes
+        if "alerts" in attributes:
             for alert in attributes['alerts']:
                 alert_number += 1
                 _LOGGER.info("Alert #" + str(alert_number))
@@ -121,15 +125,22 @@ class EASGenTTSEngine:
                         continue
                    
                     _LOGGER.debug("Gathering the County Data")
-                    County = alert.get('zoneid').split(",")[1]
-                    if len(County) >= 3:
-                        CountyState = County[:2]
-                        CountyCode = str(int(County[2:].split("C")[1]))
+                    county_parts = alert.get('zoneid').split(",")
+                    if len(county_parts) > 1:
+                        County = county_parts[1]
+                        if len(County) >= 3:
+                            CountyState = County[:2]
+                            CountyCode = str(int(County[2:].split("C")[1]))
+                        else:
+                            _LOGGER.warning(f"Skipping County with less than 3 characters: {County}")
+                            continue
                     else:
-                        _LOGGER.warning(f"Skipping County with less than 3 characters: {County}")
-                        continue
+                        # No county in zone ID, use zone state and a default county code
+                        CountyState = ZoneState
+                        CountyCode = "000"
 
                     _LOGGER.debug("Gathering the FIPs Data")
+                    StateCode = "00"  # Default
                     for item in FIPS:
                        if item["State"] == ZoneState:
                           StateCode = item["State Code"]
@@ -149,6 +160,15 @@ class EASGenTTSEngine:
                         spoken_title = alert.get('spoken_title')
                         _LOGGER.warning(f"EAS ALERT!!: " + spoken_title)
 
+                    # Add description if enabled in configuration
+                    if self._config_entry and self._config_entry.data.get('include_description', False):
+                        description = alert.get('description', '')
+                        if description:
+                            what_section = self._extract_what_section(description)
+                            if what_section:
+                                spoken_title += f". {what_section}"
+                                _LOGGER.debug("Added WHAT section to spoken title")
+
                     _LOGGER.debug("Parsing the Alert Dates")
                     BeginTime = parser.parse(alert.get('onset'))
                     EndTime = parser.parse(alert.get('endsExpires'))
@@ -167,7 +187,7 @@ class EASGenTTSEngine:
                     _LOGGER.debug("Appending Data to Alerts to be Spoken List")
                     results.append((MinHeader, spoken_title, FullHeader))
         else:
-            _LOGGER.error("Weather alerts integration not found")
+            _LOGGER.info("No weather alerts found")
         return results
 
     def calculate_purge_time(self, purge_diff):
@@ -205,6 +225,23 @@ class EASGenTTSEngine:
         await asyncio.to_thread(EASGen.export_wav, footer_path, AlertEndofMessage)
         footer = await asyncio.to_thread(pydub.AudioSegment.from_wav, footer_path)
         return (footer, footer_path)
+
+    def _extract_what_section(self, description: str) -> str:
+        """Extract the WHAT section from weather alert description."""
+        import re
+        
+        # Look for the WHAT section
+        what_match = re.search(r'\* WHAT\.\.\.(.+?)(?=\n\s*\* [A-Z]|\Z)', description, re.DOTALL | re.IGNORECASE)
+        
+        if what_match:
+            what_text = what_match.group(1).strip()
+            # Clean up the text - remove extra whitespace and line breaks
+            what_text = re.sub(r'\s+', ' ', what_text)
+            # Remove any remaining asterisks or bullets
+            what_text = re.sub(r'^[\*\-\•]\s*', '', what_text)
+            return what_text
+        
+        return ""
 
     @staticmethod
     def get_supported_langs() -> list:

@@ -12,20 +12,38 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_registry import async_get
 
-from .const import DEFAULT_NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, ORGS, SENSOR, TTS_ENGINE, VOICE, LANGUAGE, AVAIL_LANGUAGES
+from .const import DEFAULT_NAME, DOMAIN, CALL_SIGN, UNIQUE_ID, ORG, ORGS, STATE, ZONE, COUNTY, TTS_ENGINE, VOICE, LANGUAGE, AVAIL_LANGUAGES, MEDIA_PLAYERS, DISABLE_TTS, INCLUDE_DESCRIPTION
 
 _LOGGER = logging.getLogger(__name__)
 
 def generate_unique_id(user_input: dict) -> str:
     """Generate a unique id from user input."""
-    return f"emergency_alert_system_tts_{user_input[SENSOR]}_{user_input[TTS_ENGINE]}_{CALL_SIGN}_{ORG}"
+    county_part = f"_{user_input[COUNTY]}" if user_input.get(COUNTY) else ""
+    return f"emergency_alert_system_tts_{user_input[STATE]}_{user_input[ZONE]}{county_part}_{user_input[TTS_ENGINE]}_{user_input[CALL_SIGN]}"
 
 async def validate_user_input(hass: HomeAssistant, user_input: dict):
     """Validate user input fields."""
-    if user_input.get(SENSOR) is None:
-        raise ValueError("Alert Sensor is required")
+    if user_input.get(STATE) is None:
+        raise ValueError("State is required")
+    if user_input.get(ZONE) is None:
+        raise ValueError("Zone is required")
     if user_input.get(TTS_ENGINE) is None:
         raise ValueError("Default TTS Engine is required")
+    
+    # Validate state format
+    state = user_input[STATE].upper()
+    if len(state) != 2:
+        raise ValueError("State must be a 2-letter code (e.g., TX, CA)")
+    
+    # Validate zone format
+    zone = user_input[ZONE]
+    if not zone.isdigit() or not (1 <= len(zone) <= 3):
+        raise ValueError("Zone must be 1-3 digits")
+    
+    # Validate county format if provided
+    county = user_input.get(COUNTY, "")
+    if county and (not county.isdigit() or not (1 <= len(county) <= 3)):
+        raise ValueError("County must be 1-3 digits if provided")
 
 class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for EAS TTS Generator."""
@@ -41,23 +59,26 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
         ]
         return tts_entities
 
-    async def async_get_weatheralerts_sensors(self, hass: HomeAssistant):
-        """Get a list of sensor entities with integration attribute set to 'weatheralerts'."""
+    async def async_get_media_player_entities(self, hass: HomeAssistant):
+        """Get a list of available media player entities."""
         entity_registry = async_get(hass)
-        weatheralerts_sensors = [
+        media_player_entities = [
             entity.entity_id
             for entity in entity_registry.entities.values()
-            if entity.domain == "sensor" and entity.platform == "weatheralerts"
+            if entity.domain == "media_player"
         ]
-        return weatheralerts_sensors
+        return media_player_entities
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
         """Handle the initial step."""
         errors = {}
         if user_input is None:
             tts_entities = await self.async_get_tts_entities(self.hass)
-            weatheralerts_sensors = await self.async_get_weatheralerts_sensors(self.hass)
+            media_player_entities = await self.async_get_media_player_entities(self.hass)
             data_schema = vol.Schema({
+                vol.Required(STATE, default="TX"): str,
+                vol.Required(ZONE, default="19"): str,
+                vol.Optional(COUNTY, default=""): str,
                 vol.Required(TTS_ENGINE, default=tts_entities[0] if tts_entities else ""): selector({
                     "select": {
                         "options": tts_entities,
@@ -66,12 +87,13 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
                         "custom_value": True
                     }
                 }),
-                vol.Required(SENSOR, default=weatheralerts_sensors[0] if weatheralerts_sensors else ""): selector({
+                vol.Required(MEDIA_PLAYERS, default=[]): selector({
                     "select": {
-                        "options": weatheralerts_sensors,
+                        "options": media_player_entities,
                         "mode": "dropdown",
+                        "multiple": True,
                         "sort": True,
-                        "custom_value": True
+                        "custom_value": False
                     }
                 }),
                 vol.Optional(CALL_SIGN, default="KF5NTR"): str,
@@ -91,7 +113,9 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
                         "sort": True,
                         "custom_value": True
                     }
-                })
+                }),
+                vol.Optional(DISABLE_TTS, default=False): bool,
+                vol.Optional(INCLUDE_DESCRIPTION, default=False): bool
             })
             return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
         
@@ -113,3 +137,51 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
         except Exception as e:  # pylint: disable=broad-except
             _LOGGER.exception(str(e))
             errors["base"] = "unknown_error"
+        
+        # If there are errors, show the form again with the same schema
+        if errors:
+            tts_entities = await self.async_get_tts_entities(self.hass)
+            media_player_entities = await self.async_get_media_player_entities(self.hass)
+            data_schema = vol.Schema({
+                vol.Required(STATE, default=user_input.get(STATE, "TX")): str,
+                vol.Required(ZONE, default=user_input.get(ZONE, "19")): str,
+                vol.Optional(COUNTY, default=user_input.get(COUNTY, "")): str,
+                vol.Required(TTS_ENGINE, default=user_input.get(TTS_ENGINE, tts_entities[0] if tts_entities else "")): selector({
+                    "select": {
+                        "options": tts_entities,
+                        "mode": "dropdown",
+                        "sort": True,
+                        "custom_value": True
+                    }
+                }),
+                vol.Required(MEDIA_PLAYERS, default=user_input.get(MEDIA_PLAYERS, [])): selector({
+                    "select": {
+                        "options": media_player_entities,
+                        "mode": "dropdown",
+                        "multiple": True,
+                        "sort": True,
+                        "custom_value": False
+                    }
+                }),
+                vol.Optional(CALL_SIGN, default=user_input.get(CALL_SIGN, "KF5NTR")): str,
+                vol.Required(ORG, default=user_input.get(ORG, "EAS")): selector({
+                    "select": {
+                        "options": ORGS,
+                        "mode": "dropdown",
+                        "sort": True,
+                        "custom_value": True
+                    }
+                }),
+                vol.Required(VOICE, default=user_input.get(VOICE, "default")): str,
+                vol.Required(LANGUAGE, default=user_input.get(LANGUAGE, "en-us")): selector({
+                    "select": {
+                        "options": AVAIL_LANGUAGES,
+                        "mode": "dropdown",
+                        "sort": True,
+                        "custom_value": True
+                    }
+                }),
+                vol.Optional(DISABLE_TTS, default=user_input.get(DISABLE_TTS, False)): bool,
+                vol.Optional(INCLUDE_DESCRIPTION, default=user_input.get(INCLUDE_DESCRIPTION, False)): bool
+            })
+            return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)

@@ -3,22 +3,30 @@
       "step": {
           "user": {
               "data": {
+                  "state": "Enter your state (2-letter code, e.g., TX, CA).",
+                  "zone": "Enter your weather zone (1-3 digits, e.g., 19).",
+                  "county": "Enter your county code (optional, 1-3 digits).",
                   "tts_engine": "Select the TTS Provider.",
-                  "sensor": "Select the Weather Alert sensor.",
+                  "media_players": "Select media players for EAS announcements.",
+                  "disable_tts": "Disable TTS announcements (UI notifications only).",
+                  "include_description": "Include alert description details in TTS.",
                   "call_sign": "Set the call sign for the EAS Header Protocol.",
                   "voice": "Select the TTS Provider Voice.",
                   "org": "Select the EAS ORG.",
                   "language": "Select the TTS Provider Language."
               },
-              "description": "Provide configuration data. See documentation for further info.",
+              "description": "Configure EAS Generator with your location and TTS settings. Zone and county codes can be found at weather.gov.",
               "title": "Configure EASGen"       
           },
           "reconfigure": {
               "title": "Re-configure EASGen",
-              "description": "Provide configuration data. See documentation for further info.",
+              "description": "Configure EAS Generator with your location and TTS settings. Zone and county codes can be found at weather.gov.",
               "data": {
+                  "state": "Enter your state (2-letter code, e.g., TX, CA).",
+                  "zone": "Enter your weather zone (1-3 digits, e.g., 19).",
+                  "county": "Enter your county code (optional, 1-3 digits).",
                   "tts_engine": "Select the TTS Provider.",
-                  "sensor": "Select the Weather Alert sensor.",
+                  "media_players": "Select media players for EAS announcements.",
                   "call_sign": "Set the call sign for the EAS Header Protocol.",
                   "voice": "Select the TTS Provider Voice.",
                   "org": "Select the EAS ORG.",

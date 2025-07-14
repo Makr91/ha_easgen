@@ -10,7 +10,13 @@
 ![GitHub Release Workflow Status](https://img.shields.io/github/actions/workflow/status/Makr91/ha_easgen/release.yml?style=plastic)
 
 ## Emergency Alert System
-This is a platform integration for [Emergency Alert System](https://www.fcc.gov/emergency-alert-system) for Home Assistant to Generate a the EAS Alerts for Satellites.
+This is a platform integration for [Emergency Alert System](https://www.fcc.gov/emergency-alert-system) for Home Assistant that generates EAS alerts with authentic tones and announcements.
+
+The integration includes:
+- **Built-in Weather Alert Monitoring**: Direct integration with weather.gov API (no external dependencies)
+- **EAS Tone Generation**: Authentic EAS header/footer tones using EASGen library
+- **TTS Integration**: Works with any Home Assistant TTS engine
+- **Self-Contained**: No external integrations required
 
 Currently only the United States EAS system is in place. Support for other countries is welcome to be submitted via a PR.
 
@@ -39,7 +45,7 @@ Currently only the United States EAS system is in place. Support for other count
 ### Installation
 
 #### Pre-Requisites
-Please look at the [WeatherAlerts installation & configuration instructions](https://github.com/custom-components/weatheralerts) to set up Weather Alerts first.
+No external integrations required! EAS Generator now includes built-in weather alert monitoring via the weather.gov API.
 
 
 #### HACS
@@ -59,10 +65,45 @@ Please look at the [WeatherAlerts installation & configuration instructions](htt
 
 ### Setup
 
-#### GUI
+#### Configuration
 1. Go to the *Integrations* page and click **+ ADD INTEGRATION**
-2. Select *Emergency Alert System* in the list of integrations
-3. Click Submit.
+2. Select *Emergency Alert System Generator* in the list of integrations
+3. Configure the following:
+   - **State**: Enter your 2-letter state code (e.g., TX, CA, NY)
+   - **Zone**: Enter your weather zone number (1-3 digits, e.g., 19, 127)
+   - **County**: (Optional) Enter your county code (1-3 digits)
+   - **TTS Engine**: Select your preferred TTS provider
+   - **Call Sign**: Set your EAS call sign (default: KF5NTR)
+   - **Organization**: Choose EAS organization type (EAS/WXR/PEP/CIV)
+   - **Voice**: Set TTS voice preference
+   - **Language**: Choose TTS language
+
+#### Finding Your Zone/County Codes
+You can find your weather zone and county codes at:
+- [weather.gov Zone Map](https://www.weather.gov/gis/ZoneCounty)
+- [NWS Zone and County Lookup](https://www.weather.gov/pimar/ZoneCounty)
+
+#### Usage
+Once configured, the integration will:
+1. Monitor weather alerts for your specified location
+2. Generate EAS announcements when alerts are active
+3. Create TTS entities that can be used in automations
+
+#### Example Automation
+```yaml
+alias: "EAS Weather Alert"
+trigger:
+  - platform: state
+    entity_id: tts.eas_gen_tts_kf5ntr
+    attribute: alerts
+action:
+  - service: tts.speak
+    target:
+      entity_id: tts.eas_gen_tts_kf5ntr
+    data:
+      message: "Emergency Alert"
+      media_player_entity_id: media_player.your_speaker
+```
 
 ### Notes
 This is an Early alpha build, please do NOT rely on this!

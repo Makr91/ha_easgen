@@ -1,9 +1,6 @@
 {
   "domain": "ha_easgen",
   "name": "Emergency Alert System Generator",
-  "after_dependencies": [
-    "weatheralerts"
-  ],
   "codeowners": [
     "@Makr91"
   ],
@@ -17,7 +14,8 @@
   "requirements": [
     "pydub",
     "easgen",
-    "aiofiles"
+    "aiofiles",
+    "async_timeout"
   ],
-  "version": "v0.1.29"
+  "version": "v0.1.26"
 }

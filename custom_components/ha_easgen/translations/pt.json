@@ -1,36 +1,40 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "data": {
-          "tts_engine": "Selecione o Fornecedor de TTS (Text-to-Speech).",
-          "sensor": "Selecione o sensor de Alertas Meteorológicos.",
-          "call_sign": "Defina o indicativo de chamada (call sign) para o Protocolo de Cabeçalho EAS.",
-          "voice": "Selecione a Voz do Fornecedor de TTS.",
-          "org": "Selecione a Organização (ORG) EAS.",
-          "language": "Selecione o Idioma do Fornecedor de TTS."
-        },
-        "description": "Forneça os dados de configuração. Consulte a documentação para mais informações.",
-        "title": "Configurar o EASGen"
+      "step": {
+          "user": {
+              "data": {
+                  "state": "Digite seu estado (código de 2 letras, ex: TX, CA).",
+                  "zone": "Digite sua zona meteorológica (1-3 dígitos, ex: 19).",
+                  "county": "Digite o código do seu condado (opcional, 1-3 dígitos).",
+                  "tts_engine": "Selecione o provedor TTS.",
+                  "call_sign": "Defina o indicativo para o protocolo de cabeçalho EAS.",
+                  "voice": "Selecione a voz do provedor TTS.",
+                  "org": "Selecione a ORG EAS.",
+                  "language": "Selecione o idioma do provedor TTS."
+              },
+              "description": "Configure o Gerador EAS com sua localização e configurações TTS. Códigos de zona e condado podem ser encontrados em weather.gov.",
+              "title": "Configurar EASGen"       
+          },
+          "reconfigure": {
+              "title": "Reconfigurar EASGen",
+              "description": "Configure o Gerador EAS com sua localização e configurações TTS. Códigos de zona e condado podem ser encontrados em weather.gov.",
+              "data": {
+                  "state": "Digite seu estado (código de 2 letras, ex: TX, CA).",
+                  "zone": "Digite sua zona meteorológica (1-3 dígitos, ex: 19).",
+                  "county": "Digite o código do seu condado (opcional, 1-3 dígitos).",
+                  "tts_engine": "Selecione o provedor TTS.",
+                  "call_sign": "Defina o indicativo para o protocolo de cabeçalho EAS.",
+                  "voice": "Selecione a voz do provedor TTS.",
+                  "org": "Selecione a ORG EAS.",
+                  "language": "Selecione o idioma do provedor TTS."
+              }
+          }
       },
-      "reconfigure": {
-        "title": "Reconfigurar o EASGen",
-        "description": "Forneça os dados de configuração. Consulte a documentação para mais informações.",
-        "data": {
-          "tts_engine": "Selecione o Fornecedor de TTS (Text-to-Speech).",
-          "sensor": "Selecione o sensor de Alertas Meteorológicos.",
-          "call_sign": "Defina o indicativo de chamada (call sign) para o Protocolo de Cabeçalho EAS.",
-          "voice": "Selecione a Voz do Fornecedor de TTS.",
-          "org": "Selecione a Organização (ORG) EAS.",
-          "language": "Selecione o Idioma do Fornecedor de TTS."
-        }
+      "error": {
+        "already_configured": "Esta integração já foi configurada."
+      },
+      "abort": {
+        "already_configured": "Esta integração já foi configurada."
       }
-    },
-    "error": {
-      "already_configured": "Esta Integração já foi configurada."
-    },
-    "abort": {
-      "already_configured": "Esta Integração já foi configurada."
-    }
   }
 }

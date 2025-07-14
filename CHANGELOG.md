@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.31](https://github.com/Makr91/ha_easgen/compare/v0.1.30...v0.1.31) (2025-07-14)
+
+
+### Bug Fixes
+
+* annoucement queueing, translations, ci/cd versioning for manifest.json ([47d24d1](https://github.com/Makr91/ha_easgen/commit/47d24d171ccfcc4e421623c3ce09f3486242e56a))
+* cleanup repository ([bdc525e](https://github.com/Makr91/ha_easgen/commit/bdc525e7ba2bab7eb9daa8e87596cce5f3697e20))
+* Toggleable TTS categories, fix same cache data for dense fog ([8361a0f](https://github.com/Makr91/ha_easgen/commit/8361a0fd13525ec286f7e259d2bbef6fb3d64679))
+
 ## [0.1.30](https://github.com/Makr91/ha_easgen/compare/v0.1.29...v0.1.30) (2025-07-14)
 
 

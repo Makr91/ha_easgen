@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import json
 import logging
+import aiofiles
 from typing import Dict, List, Any, Optional
 
 _LOGGER = logging.getLogger(__name__)
@@ -24,8 +25,9 @@ async def get_same_data() -> List[Dict[str, Any]]:
     
     if _SAME_CACHE is None:
         try:
-            with open(SAME_cache_file, 'r', encoding='utf-8') as file:
-                _SAME_CACHE = json.load(file)
+            async with aiofiles.open(SAME_cache_file, 'r', encoding='utf-8') as file:
+                content = await file.read()
+                _SAME_CACHE = json.loads(content)
             _LOGGER.debug("Loaded SAME data from local cache: %d entries", len(_SAME_CACHE))
         except FileNotFoundError:
             _LOGGER.error("SAME cache file not found: %s", SAME_cache_file)
@@ -46,8 +48,9 @@ async def get_fips_data() -> List[Dict[str, Any]]:
     
     if _FIPS_CACHE is None:
         try:
-            with open(FIPS_cache_file, 'r', encoding='utf-8') as file:
-                _FIPS_CACHE = json.load(file)
+            async with aiofiles.open(FIPS_cache_file, 'r', encoding='utf-8') as file:
+                content = await file.read()
+                _FIPS_CACHE = json.loads(content)
             _LOGGER.debug("Loaded FIPS data from local cache: %d entries", len(_FIPS_CACHE))
         except FileNotFoundError:
             _LOGGER.error("FIPS cache file not found: %s", FIPS_cache_file)

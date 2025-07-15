@@ -24,12 +24,13 @@ HEADERS = {
 class EASGenWeatherAlertsSensor(SensorEntity):
     """Internal weather alerts sensor for EAS Generator."""
 
-    def __init__(self, hass: HomeAssistant, state: str, zone: str, county: str = ""):
+    def __init__(self, hass: HomeAssistant, state: str, zone: str, county: str = "", config_entry=None):
         """Initialize the weather alerts sensor."""
         self.hass = hass
         self.zone_state = state.upper()
         self.zone_config = zone
         self.county_config = county
+        self.config_entry = config_entry
         self.session = async_create_clientsession(hass)
         self._attr_native_value = 0
         self.connected = True
@@ -272,9 +273,18 @@ class EASGenWeatherAlertsSensor(SensorEntity):
     def device_info(self):
         """Return device information."""
         from .const import DOMAIN, MANUFACTURER
+        
+        # Create location-based device name
+        location = f"{self.zone_state}Z{self.zone_config}"
+        if self.county_config:
+            location += f" {self.zone_state}C{self.county_config}"
+        
+        # Use consistent device identifier with other sensors
+        device_id = self.config_entry.entry_id if self.config_entry else f"weather_alerts_{self.feedid}"
+        
         return {
-            "identifiers": {(DOMAIN, f"weather_alerts_{self.feedid}")},
-            "name": f"Weather Alerts {self.feedid}",
+            "identifiers": {(DOMAIN, device_id)},
+            "name": f"EAS Generator {location}",
             "manufacturer": MANUFACTURER,
-            "model": "Internal Weather Alerts",
+            "model": "Emergency Alert System",
         }

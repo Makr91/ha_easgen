@@ -97,11 +97,18 @@ class EASGenTTSEntity(TextToSpeechEntity):
 
     @property
     def device_info(self):
+        """Return device information."""
+        # Create location-based device name
+        location = f"{self._config.data[STATE]}Z{self._config.data[ZONE]}"
+        if self._config.data.get(COUNTY):
+            location += f" {self._config.data[STATE]}C{self._config.data[COUNTY]}"
+        
         return {
-            "identifiers": {(DOMAIN, self._attr_unique_id)},
-            "model": "Emergency Alert System TTS Generator",
+            "identifiers": {(DOMAIN, self._config.entry_id)},
+            "name": f"EAS Generator {location}",
             "manufacturer": MANUFACTURER,
-            "sw_version": [VERSION]
+            "model": "Emergency Alert System",
+            "sw_version": VERSION
         }
 
     @property

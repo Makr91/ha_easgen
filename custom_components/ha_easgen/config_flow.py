@@ -128,7 +128,14 @@ class EASGenConfigFlow(ConfigFlow, domain=DOMAIN):
             user_input[UNIQUE_ID] = unique_id
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
-            return self.async_create_entry(title=f"{DEFAULT_NAME}", data=user_input)
+            
+            # Create unique title based on location
+            location = f"{user_input[STATE]}Z{user_input[ZONE]}"
+            if user_input.get(COUNTY):
+                location += f" {user_input[STATE]}C{user_input[COUNTY]}"
+            title = f"{DEFAULT_NAME} ({location})"
+            
+            return self.async_create_entry(title=title, data=user_input)
         except data_entry_flow.AbortFlow:
             return self.async_abort(reason="already_configured")
         except HomeAssistantError as e:

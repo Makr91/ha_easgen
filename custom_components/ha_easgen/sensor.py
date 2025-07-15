@@ -131,7 +131,8 @@ async def async_setup_entry(
         hass,
         config_entry.data[STATE],
         config_entry.data[ZONE],
-        config_entry.data.get(COUNTY, "")
+        config_entry.data.get(COUNTY, ""),
+        config_entry
     )
     
     # Validate the zone/county IDs with weather.gov API
@@ -491,11 +492,18 @@ class EASAlertsSummarySensor(SensorEntity):
     @property
     def device_info(self):
         """Return device information."""
+        config_entry = self.coordinator.config_entry
+        
+        # Create location-based device name
+        location = f"{config_entry.data[STATE]}Z{config_entry.data[ZONE]}"
+        if config_entry.data.get(COUNTY):
+            location += f" {config_entry.data[STATE]}C{config_entry.data[COUNTY]}"
+        
         return {
-            "identifiers": {(DOMAIN, f"alerts_summary")},
-            "name": "EAS Alerts Summary",
+            "identifiers": {(DOMAIN, config_entry.entry_id)},
+            "name": f"EAS Generator {location}",
             "manufacturer": "EAS Generator",
-            "model": "Alert Summary Sensor",
+            "model": "Emergency Alert System",
         }
 
 
@@ -600,9 +608,16 @@ class EASIndividualAlertSensor(SensorEntity):
     @property
     def device_info(self):
         """Return device information."""
+        config_entry = self.coordinator.config_entry
+        
+        # Create location-based device name
+        location = f"{config_entry.data[STATE]}Z{config_entry.data[ZONE]}"
+        if config_entry.data.get(COUNTY):
+            location += f" {config_entry.data[STATE]}C{config_entry.data[COUNTY]}"
+        
         return {
-            "identifiers": {(DOMAIN, f"alert_{self.alert_number}")},
-            "name": f"EAS Alert {self.alert_number}",
+            "identifiers": {(DOMAIN, config_entry.entry_id)},
+            "name": f"EAS Generator {location}",
             "manufacturer": "EAS Generator",
-            "model": "Individual Alert Sensor",
+            "model": "Emergency Alert System",
         }

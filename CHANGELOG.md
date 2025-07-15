@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.32](https://github.com/Makr91/ha_easgen/compare/v0.1.31...v0.1.32) (2025-07-15)
+
+
+### Bug Fixes
+
+* device reorganization, multiple integrations ([e097c31](https://github.com/Makr91/ha_easgen/commit/e097c312af57c10ca149d8330335550f3cb819fb))
+* enabling multiple integration entries ([26fdf9d](https://github.com/Makr91/ha_easgen/commit/26fdf9dabb07f6cc9a40cd3048ccc1825b84fe62))
+
 ## [0.1.31](https://github.com/Makr91/ha_easgen/compare/v0.1.30...v0.1.31) (2025-07-14)
 
 

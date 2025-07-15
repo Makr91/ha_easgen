@@ -209,10 +209,12 @@ class EASAlertCoordinator:
         """Perform initial check of alerts."""
         await asyncio.sleep(5)  # Give weather sensor time to initialize
         try:
-            await self.weather_sensor.async_update()
-            if hasattr(self.weather_sensor, '_attr_extra_state_attributes'):
-                alerts = self.weather_sensor._attr_extra_state_attributes.get("alerts", [])
-                await self._process_alerts(alerts)
+            # Only proceed if weather sensor is properly initialized
+            if hasattr(self.weather_sensor, 'hass') and self.weather_sensor.hass:
+                await self.weather_sensor.async_update()
+                if hasattr(self.weather_sensor, '_attr_extra_state_attributes'):
+                    alerts = self.weather_sensor._attr_extra_state_attributes.get("alerts", [])
+                    await self._process_alerts(alerts)
         except Exception as e:
             _LOGGER.error("Error in initial alert check: %s", e)
         
@@ -451,8 +453,15 @@ class EASAlertsSummarySensor(SensorEntity):
     
     def __init__(self, coordinator: EASAlertCoordinator):
         self.coordinator = coordinator
-        self._attr_name = "EAS Alerts"
-        self._attr_unique_id = f"{DOMAIN}_alerts_summary"
+        config_entry = coordinator.config_entry
+        
+        # Create unique name and ID based on location
+        location_name = f"{config_entry.data[STATE]}Z{config_entry.data[ZONE]}"
+        if config_entry.data.get(COUNTY):
+            location_name += f" {config_entry.data[STATE]}C{config_entry.data[COUNTY]}"
+        
+        self._attr_name = f"EAS Alerts {location_name}"
+        self._attr_unique_id = f"{DOMAIN}_alerts_summary_{config_entry.entry_id}"
         self._attr_icon = "mdi:alert-rhombus"
         self._attr_unit_of_measurement = "Alerts"
         
@@ -496,8 +505,15 @@ class EASIndividualAlertSensor(SensorEntity):
     def __init__(self, coordinator: EASAlertCoordinator, alert_number: int):
         self.coordinator = coordinator
         self.alert_number = alert_number
-        self._attr_name = f"EAS Alert {alert_number}"
-        self._attr_unique_id = f"{DOMAIN}_alert_{alert_number}"
+        config_entry = coordinator.config_entry
+        
+        # Create unique name and ID based on location
+        location_name = f"{config_entry.data[STATE]}Z{config_entry.data[ZONE]}"
+        if config_entry.data.get(COUNTY):
+            location_name += f" {config_entry.data[STATE]}C{config_entry.data[COUNTY]}"
+        
+        self._attr_name = f"EAS Alert {alert_number} {location_name}"
+        self._attr_unique_id = f"{DOMAIN}_alert_{alert_number}_{config_entry.entry_id}"
         
         # Register with coordinator
         coordinator.register_alert_sensor(self, alert_number)

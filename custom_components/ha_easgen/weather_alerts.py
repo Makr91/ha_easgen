@@ -247,8 +247,8 @@ class EASGenWeatherAlertsSensor(SensorEntity):
                 }
                 _LOGGER.debug("[%s] Weather alerts update completed - %d alerts found", self.feedid, len(alerts))
                 
-                # Notify callback if registered
-                if self._alert_callback:
+                # Notify callback if registered and entity is properly initialized
+                if self._alert_callback and self.hass:
                     try:
                         await self._alert_callback(alerts)
                     except Exception as callback_error:

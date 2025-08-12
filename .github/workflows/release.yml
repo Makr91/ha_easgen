@@ -28,7 +28,7 @@ jobs:
           bump-patch-for-minor-pre-major: true
 
       - name: "Checkout the repository"
-        uses: "actions/checkout@v4.2.2"
+        uses: "actions/checkout@v5.0.0"
         with:
           fetch-depth: 0
         if: ${{ steps.release.outputs.release_created }}

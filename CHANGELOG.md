@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.33](https://github.com/Makr91/ha_easgen/compare/v0.1.32...v0.1.33) (2026-01-27)
+
+
+### Bug Fixes
+
+* AI quick./test fix for New NWS/Weather.gov API ([0407831](https://github.com/Makr91/ha_easgen/commit/04078318383191099a5ad9324e0b4b612952b2f7))
+* Updating Versions per Dependabot ([1db0946](https://github.com/Makr91/ha_easgen/commit/1db09464fcbdb3b947918a39fd3aae9b3e495e87))
+
 ## [0.1.32](https://github.com/Makr91/ha_easgen/compare/v0.1.31...v0.1.32) (2025-07-15)
 
 

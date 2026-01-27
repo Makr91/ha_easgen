@@ -19,6 +19,7 @@ from .const import (
     DISABLE_TTS, INCLUDE_DESCRIPTION, TTS_WARNINGS, TTS_WATCHES, TTS_STATEMENTS
 )
 from .weather_alerts import EASGenWeatherAlertsSensor
+from .eventcodes import get_same_data
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -324,10 +325,8 @@ class EASAlertCoordinator:
         # If we have an event code, look it up in the SAME cache
         if event_code:
             try:
-                # Load SAME cache
-                same_cache_path = os.path.join(os.path.dirname(__file__), "cache", "SAME_cache.json")
-                with open(same_cache_path, 'r') as f:
-                    same_cache = json.load(f)
+                # Load SAME cache using async helper
+                same_cache = await get_same_data()
                 
                 # Find the event in the cache
                 for item in same_cache:
@@ -343,7 +342,7 @@ class EASAlertCoordinator:
                         elif event_level == "TEST":
                             return "statement"  # Skip test messages by default
                         break
-            except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+            except Exception as e:
                 _LOGGER.warning("Error loading SAME cache: %s", e)
         
         # Fallback: try to determine by event name

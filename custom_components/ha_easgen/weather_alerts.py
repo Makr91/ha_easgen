@@ -11,12 +11,12 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.const import __version__
 
-from .const import WEATHER_API_URL, WEATHER_ID_CHECK_URL, ID_CHECK_ERRORS
+from .const import WEATHER_API_URL, ZONE_METADATA_URL, COUNTY_METADATA_URL
 
 _LOGGER = logging.getLogger(__name__)
 
 HEADERS = {
-    "accept": "application/json",
+    "accept": "application/geo+json",
     "user-agent": f"HomeAssistant/{__version__}",
 }
 
@@ -78,50 +78,20 @@ class EASGenWeatherAlertsSensor(SensorEntity):
     async def async_validate_ids(self):
         """Validate zone and county IDs with weather.gov."""
         try:
-            # Check zone ID
-            zone_check_url = WEATHER_ID_CHECK_URL.format(self.zoneid)
-            _LOGGER.debug("Validating zone ID '%s' with URL: %s", self.zoneid, zone_check_url)
-            async with async_timeout.timeout(20):
-                zone_check_response = await self.session.get(
-                    zone_check_url,
-                    headers=HEADERS
-                )
-                _LOGGER.debug("Zone validation response status: %s", zone_check_response.status)
-                zone_data = await zone_check_response.text()
-                _LOGGER.debug("Zone validation response length: %d chars", len(zone_data))
-                
-                if any(id_error in zone_data for id_error in ID_CHECK_ERRORS):
-                    _LOGGER.error("Zone ID validation failed - found error in response for '%s'", self.zoneid)
-                    raise ValueError(f"Invalid zone ID '{self.zoneid}'")
-                _LOGGER.debug("Zone ID '%s' validation successful", self.zoneid)
-
-            # Check county ID if provided
-            if self.countyid:
-                county_check_url = WEATHER_ID_CHECK_URL.format(self.countyid)
-                _LOGGER.debug("Validating county ID '%s' with URL: %s", self.countyid, county_check_url)
-                async with async_timeout.timeout(20):
-                    county_check_response = await self.session.get(
-                        county_check_url,
-                        headers=HEADERS
-                    )
-                    _LOGGER.debug("County validation response status: %s", county_check_response.status)
-                    county_data = await county_check_response.text()
-                    _LOGGER.debug("County validation response length: %d chars", len(county_data))
-                    
-                    if any(id_error in county_data for id_error in ID_CHECK_ERRORS):
-                        _LOGGER.error("County ID validation failed - found error in response for '%s'", self.countyid)
-                        raise ValueError(f"Invalid county ID '{self.countyid}'")
-                    _LOGGER.debug("County ID '%s' validation successful", self.countyid)
-
-            # Get the actual name from the API
-            alerts_url = WEATHER_API_URL.format(self.zoneid)
-            _LOGGER.debug("Getting zone name from alerts API with URL: %s", alerts_url)
+            # Get the actual name from the Metadata API and validate Zone ID
+            zone_url = ZONE_METADATA_URL.format(self.zoneid)
+            _LOGGER.debug("Getting zone metadata from API with URL: %s", zone_url)
             async with async_timeout.timeout(20):
                 response = await self.session.get(
-                    alerts_url,
+                    zone_url,
                     headers=HEADERS
                 )
                 _LOGGER.debug("Zone name lookup response status: %s", response.status)
+                
+                if response.status == 404:
+                    _LOGGER.error("Zone ID '%s' not found (404 status)", self.zoneid)
+                    raise ValueError(f"Zone ID '{self.zoneid}' not found")
+
                 data = await response.json()
                 _LOGGER.debug("Zone name lookup response keys: %s", list(data.keys()) if isinstance(data, dict) else "Not a dict")
                 
@@ -129,13 +99,34 @@ class EASGenWeatherAlertsSensor(SensorEntity):
                     _LOGGER.error("Zone ID '%s' not found (404 status)", self.zoneid)
                     raise ValueError(f"Zone ID '{self.zoneid}' not found")
                 
-                if "title" in data:
-                    original_name = data["title"]
-                    parsed_name = original_name.split("advisories for ")[1].split(" (")[0]
-                    _LOGGER.debug("Zone name parsed from '%s' to '%s'", original_name, parsed_name)
-                    self._name = parsed_name
+                # Update sensor name with the actual zone name
+                if "properties" in data and "name" in data["properties"]:
+                    zone_name = data["properties"]["name"]
+                    self._attr_name = f"Weather Alerts {zone_name} ({self.zoneid})"
                 else:
-                    _LOGGER.warning("No 'title' field found in zone name response")
+                    _LOGGER.warning("No 'name' property found in zone metadata")
+
+            # Check county ID if provided
+            if self.countyid:
+                county_check_url = COUNTY_METADATA_URL.format(self.countyid)
+                _LOGGER.debug("Validating county ID '%s' with URL: %s", self.countyid, county_check_url)
+                async with async_timeout.timeout(20):
+                    county_check_response = await self.session.get(
+                        county_check_url,
+                        headers=HEADERS
+                    )
+                    _LOGGER.debug("County validation response status: %s", county_check_response.status)
+                    
+                    if county_check_response.status == 404:
+                        _LOGGER.error("County ID '%s' not found (404 status)", self.countyid)
+                        raise ValueError(f"Invalid county ID '{self.countyid}'")
+
+                    county_data = await county_check_response.json()
+                    
+                    if "status" in county_data and county_data["status"] == 404:
+                        _LOGGER.error("County ID validation failed - found error in response for '%s'", self.countyid)
+                        raise ValueError(f"Invalid county ID '{self.countyid}'")
+                    _LOGGER.debug("County ID '%s' validation successful", self.countyid)
 
         except Exception as e:
             _LOGGER.error("Failed to validate zone/county IDs: %s", e)
@@ -174,6 +165,7 @@ class EASGenWeatherAlertsSensor(SensorEntity):
                     for i, alert in enumerate(data["features"]):
                         if alert.get("properties") is not None:
                             properties = alert["properties"]
+                            parameters = properties.get("parameters", {})
                             
                             # Log basic alert info
                             alert_event = properties.get("event", "Unknown")
@@ -182,11 +174,18 @@ class EASGenWeatherAlertsSensor(SensorEntity):
                             _LOGGER.debug("[%s] Processing alert %d/%d: %s (Severity: %s, ID: %s)", 
                                         self.feedid, i+1, features_count, alert_event, alert_severity, alert_id)
                             
+                            # Helper to safely extract single string from potential list parameters
+                            def get_param(key):
+                                val = parameters.get(key, "null")
+                                if isinstance(val, list):
+                                    return val[0] if val else "null"
+                                return val
+
                             # Set endsExpires field
-                            if properties["ends"] is None:
+                            if properties.get("ends") is None:
                                 properties["endsExpires"] = properties.get("expires", "null")
                             else:
-                                properties["endsExpires"] = properties.get("ends", "null")
+                                properties["endsExpires"] = properties.get("ends")
                             
                             # Format alert data
                             alert_data = {
@@ -201,10 +200,10 @@ class EASGenWeatherAlertsSensor(SensorEntity):
                                 "severity": properties.get("severity", "null"),
                                 "title": properties.get("headline", "null").split(" by ")[0],
                                 "urgency": properties.get("urgency", "null"),
-                                "NWSheadline": properties["parameters"].get("NWSheadline", "null"),
-                                "hailSize": properties["parameters"].get("hailSize", "null"),
-                                "windGust": properties["parameters"].get("windGust", "null"),
-                                "waterspoutDetection": properties["parameters"].get("waterspoutDetection", "null"),
+                                "NWSheadline": get_param("NWSheadline"),
+                                "hailSize": get_param("hailSize"),
+                                "windGust": get_param("windGust"),
+                                "waterspoutDetection": get_param("waterspoutDetection"),
                                 "effective": properties.get("effective", "null"),
                                 "expires": properties.get("expires", "null"),
                                 "endsExpires": properties.get("endsExpires", "null"),
@@ -216,6 +215,7 @@ class EASGenWeatherAlertsSensor(SensorEntity):
                                 "senderName": properties.get("senderName", "null"),
                                 "id": properties.get("id", "null"),
                                 "zoneid": self.feedid,
+                                "eventCode": properties.get("eventCode", {}), # Pass eventCode dict for SAME lookup
                             }
                             
                             # Add spoken_title for compatibility

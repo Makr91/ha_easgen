@@ -34,8 +34,8 @@ ORGS = [
 
 # Weather API Configuration
 WEATHER_API_URL = "https://api.weather.gov/alerts/active?zone={}"
-WEATHER_ID_CHECK_URL = "https://alerts.weather.gov/cap/wwaatmget.php?x={}&y=0"
-ID_CHECK_ERRORS = ["? invalid county", "? invalid zone"]
+ZONE_METADATA_URL = "https://api.weather.gov/zones/forecast/{}"
+COUNTY_METADATA_URL = "https://api.weather.gov/zones/county/{}"
 
 # TTS Language Support
 AVAIL_LANGUAGES = [

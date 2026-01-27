@@ -28,7 +28,7 @@ jobs:
           bump-patch-for-minor-pre-major: true
 
       - name: "Checkout the repository"
-        uses: "actions/checkout@v4.2.2"
+        uses: "actions/checkout@v6.0.2"
         with:
           fetch-depth: 0
         if: ${{ steps.release.outputs.release_created }}
@@ -58,7 +58,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
 
       - name: "Upload the ZIP file to the release"
-        uses: softprops/action-gh-release@v2.3.2
+        uses: softprops/action-gh-release@v2.5.0
         with:
           files: ${{ github.workspace }}/custom_components/ha_easgen/ha_easgen.zip
           tag_name: ${{ steps.previoustag.outputs.tag }}

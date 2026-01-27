@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.35](https://github.com/Makr91/ha_easgen/compare/v0.1.34...v0.1.35) (2026-01-27)
+
+
+### Bug Fixes
+
+* handle unexpected event codes as a SPS(special weather statement) ([18e18f0](https://github.com/Makr91/ha_easgen/commit/18e18f083b67f5a8b4dd7e415bc7a230f17abaa2))
+
 ## [0.1.34](https://github.com/Makr91/ha_easgen/compare/v0.1.33...v0.1.34) (2026-01-27)
 
 

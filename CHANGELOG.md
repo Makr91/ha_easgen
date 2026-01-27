@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.34](https://github.com/Makr91/ha_easgen/compare/v0.1.33...v0.1.34) (2026-01-27)
+
+
+### Bug Fixes
+
+* Refactor SAME cache loading to use async helper function ([bcc0a4b](https://github.com/Makr91/ha_easgen/commit/bcc0a4beb4bffbc3ffadd67b1478f8a0d63f307d))
+
 ## [0.1.33](https://github.com/Makr91/ha_easgen/compare/v0.1.32...v0.1.33) (2026-01-27)
 
 

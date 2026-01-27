@@ -106,8 +106,8 @@ class EASGenTTSEngine:
               break
 
         if not EventCode:
-            _LOGGER.error(f"Event code not found for event: {event}")
-            return results
+            _LOGGER.warning(f"Event code not found for event: {event}, using default 'SPS'")
+            EventCode = "SPS"
 
         _LOGGER.debug("Gathering the Zone Data")
         Zone = alert.get('zoneid').split(",")[0]
@@ -218,8 +218,8 @@ class EASGenTTSEngine:
                           break
 
                     if not EventCode:
-                        _LOGGER.error(f"Event code not found for event: {event}")
-                        continue
+                        _LOGGER.warning(f"Event code not found for event: {event}, using default 'SPS'")
+                        EventCode = "SPS"
 
                     _LOGGER.debug("Gathering the Zone Data")
                     Zone = alert.get('zoneid').split(",")[0]
